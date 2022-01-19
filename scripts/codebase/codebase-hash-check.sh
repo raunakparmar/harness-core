@@ -9,7 +9,7 @@ normal=$(tput sgr0)
 
 errors=()
 ALL_MODULES=`ls -a`
-for MODULE in $@
+for MODULE in $ALL_MODULES
 do
       echo -e "${bold}\n##################################################\nChecking dependency hash for module: $MODULE\n${normal}"
 
