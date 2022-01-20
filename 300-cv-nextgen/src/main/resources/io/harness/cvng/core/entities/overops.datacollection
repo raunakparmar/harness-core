@@ -1,7 +1,6 @@
 Var resultsUrl = concat(Env:baseUrl, "?serviceId=", Env:sid, "&applicationId=", Env:serviceId, "&versionId=5.0.0&environmentId=", Env:environmentId, "&fromDateTime=", Env:startTimeSeconds, "&toDateTime=", Env:endTimeSeconds)
 print Var:resultsUrl
-Var hardCodedUrl = "http://dev.overops.harness.io/dashboard-api/eventlog?serviceId=S1&fromDateTime=1642534811&toDateTime=1642714811&applicationId=eventgenerator&versionId=5.0.0&environmentId=dev"
-Var rawResults = sync-call-with-code(url=Var:hardCodedUrl, header=Env:commonHeaders)
+Var rawResults = sync-call-with-code(url=Var:resultsUrl, header=Env:commonHeaders)
 Var respCode = Var:rawResults[1]
 Var httpOk = 200
 while Var:respCode not equal to Var:httpOk {
