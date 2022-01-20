@@ -5,25 +5,20 @@
  * https://polyformproject.org/wp-content/uploads/2020/05/PolyForm-Free-Trial-1.0.0.txt.
  */
 
-package io.harness.app.schema.type.delegate;
+package io.harness.pms.sdk.core.governance;
 
-import static io.harness.annotations.dev.HarnessTeam.DEL;
+import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
 
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.pms.contracts.plan.JsonExpansionInfo;
 
-import software.wings.security.PermissionAttribute;
-import software.wings.security.annotations.Scope;
-
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-@OwnedBy(DEL)
+@OwnedBy(PIPELINE)
 @Value
 @Builder
-@AllArgsConstructor
-@Scope(PermissionAttribute.ResourceType.APPLICATION)
-public class QLDelegateConnection {
-  boolean disconnected;
-  String version;
+public class JsonExpansionHandlerInfo {
+  JsonExpansionInfo jsonExpansionInfo;
+  Class<? extends JsonExpansionHandler> expansionHandler;
 }
