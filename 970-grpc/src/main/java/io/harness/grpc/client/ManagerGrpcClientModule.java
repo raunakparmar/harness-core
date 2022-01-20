@@ -85,6 +85,7 @@ public class ManagerGrpcClientModule extends ProviderModule {
   }
 
   private String computeAuthority(Config config, VersionInfo versionInfo) {
+    log.info("The GRPC config is: {}", config);
     String defaultAuthority = "default-authority.harness.io";
     String authorityToUse;
     if (!isValidAuthority(config.authority)) {

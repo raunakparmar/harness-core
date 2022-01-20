@@ -18,8 +18,9 @@ http_archive(
     sha256 = "d0f5f605d0d656007ce6c8b5a82df3037e1d8fe8b121ed42e536f569dec16113",
     strip_prefix = "protobuf-3.14.0",
     urls = [
-        "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
+        "http://jfrogdev.dev.harness.io:80/artifactory/protobuf-github/archive/v3.14.0.tar.gz",
+        #"https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
+        #"https://github.com/protocolbuffers/protobuf/archive/v3.14.0.tar.gz",
     ],
 )
 
@@ -1007,8 +1008,8 @@ go_repository(
 go_repository(
     name = "com_github_drone_go_scm",
     importpath = "github.com/drone/go-scm",
-    sum = "h1:35m/CcHkYjQ4BlOM7rIIwrki6uDUbUH+Kkb9rv6om3M=",
-    version = "v1.15.1",
+    sum = "h1:VU6C6r2Hxf5FZUjTazCH2xlXBe21JDg7gBcJvsL7twk=",
+    version = "v1.18.0",
 )
 
 go_repository(
