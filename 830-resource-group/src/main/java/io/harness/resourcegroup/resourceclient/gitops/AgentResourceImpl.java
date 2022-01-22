@@ -12,6 +12,7 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
+import io.harness.exception.InvalidRequestException;
 import io.harness.gitops.models.Agent;
 import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.ng.beans.PageResponse;
@@ -26,12 +27,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -91,12 +92,12 @@ public class AgentResourceImpl implements Resource {
       agents = getAgents(scope, page_idx++);
       allAgents.addAll(agents);
     }
-    Set<Object> validResourceIds = new HashSet<>(allAgents);
+    Set<String> validResourceIds = allAgents.stream().map(Agent::getIdentifier).collect(Collectors.toSet());
     return resourceIds.stream().map(validResourceIds::contains).collect(toList());
   }
 
   private List<Agent> getAgents(Scope scope, int page_idx) {
-    List<Agent> agents = new ArrayList<>();
+    List<Agent> agents;
     try {
       Response<PageResponse<Agent>> response = gitopsResourceClient
                                                    .listAgents(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
@@ -104,7 +105,7 @@ public class AgentResourceImpl implements Resource {
                                                    .execute();
       agents = response.body().getContent();
     } catch (Exception e) {
-      log.error("Failed to fetch gitops agents", e);
+      throw new InvalidRequestException("failed to verify agent identifiers");
     }
     return agents;
   }

@@ -11,6 +11,8 @@ import io.harness.beans.ScopeLevel;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
+import io.harness.exception.InvalidRequestException;
+import io.harness.gitops.models.Repository;
 import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.ng.beans.PageResponse;
 import io.harness.resourcegroup.beans.ValidatorType;
@@ -25,12 +27,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,17 +84,19 @@ public class RepositoryResourceImpl implements Resource {
       return Collections.EMPTY_LIST;
     }
     Map<String, Object> filter = ImmutableMap.of("identifier", ImmutableMap.of("$in", resourceIds));
-    Response<PageResponse<String>> clusters = null;
+    Response<PageResponse<Repository>> response = null;
     try {
-      clusters = gitopsResourceClient
+      response = gitopsResourceClient
                      .listRepositories(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
                          scope.getProjectIdentifier(), 0, resourceIds.size(), filter)
                      .execute();
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new InvalidRequestException("failed to verify repository identifiers");
     }
-    final Set<String> clusterSet = new HashSet<>(clusters.body().getContent());
-    return resourceIds.stream().map(clusterSet::contains).collect(toList());
+    final List<Repository> repositories = response.body().getContent();
+    final Set<String> repositoriesSet =
+        repositories.stream().map(Repository::getIdentifier).collect(Collectors.toSet());
+    return resourceIds.stream().map(repositoriesSet::contains).collect(toList());
   }
 
   @Override

@@ -19,35 +19,34 @@ import retrofit2.http.Query;
 
 @OwnedBy(HarnessTeam.GITOPS)
 public interface GitopsResourceClient {
+  @GET("agents")
+  Call<PageResponse<Agent>> listAgents(
+      @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
+      @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size);
 
-    @GET("agents")
-    Call<PageResponse<Agent>> listAgents(
-            @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
-            @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
-            @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-            @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size);
+  @POST("applications")
+  Call<PageResponse<Application>> listApps(
+      @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
+      @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
+      @Body Object filter);
 
-    @POST("applications")
-    Call<PageResponse<Application>> listApps(
-            @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
-            @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
-            @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-            @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
-            @Body Object filter);
+  @POST("repositories")
+  Call<PageResponse<Repository>> listRepositories(
+      @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
+      @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
+      @Body Object filter);
 
-    @POST("repositories")
-    Call<PageResponse<Repository>> listRepositories(
-            @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
-            @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
-            @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-            @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
-            @Body Object filter);
-
-    @POST("clusters")
-    Call<PageResponse<Cluster>>  listClusters(
-            @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
-            @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
-            @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-            @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
-            @Body Object filter);
+  @POST("clusters")
+  Call<PageResponse<Cluster>> listClusters(
+      @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
+      @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
+      @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
+      @Body Object filter);
 }

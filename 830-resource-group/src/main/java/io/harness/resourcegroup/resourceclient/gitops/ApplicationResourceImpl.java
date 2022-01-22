@@ -11,6 +11,8 @@ import io.harness.beans.ScopeLevel;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
+import io.harness.exception.InvalidRequestException;
+import io.harness.gitops.models.Application;
 import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.ng.beans.PageResponse;
 import io.harness.resourcegroup.beans.ValidatorType;
@@ -25,12 +27,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,19 +85,18 @@ public class ApplicationResourceImpl implements Resource {
       return Collections.EMPTY_LIST;
     }
     Map<String, Object> filter = ImmutableMap.of("name", ImmutableMap.of("$in", resourceIds));
-    final Response<PageResponse<String>> response;
+    final Response<PageResponse<Application>> response;
     try {
       response = gitopsResourceClient
                      .listApps(scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier(), 0,
                          resourceIds.size(), filter)
                      .execute();
-      final List<String> apps = response.body().getContent();
-      final Set<String> appsSet = new HashSet<>(apps);
+      final List<Application> apps = response.body().getContent();
+      final Set<String> appsSet = apps.stream().map(Application::getIdentifier).collect(Collectors.toSet());
       return resourceIds.stream().map(appsSet::contains).collect(toList());
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new InvalidRequestException("failed to verify application names");
     }
-    return Collections.EMPTY_LIST;
   }
 
   @Override
