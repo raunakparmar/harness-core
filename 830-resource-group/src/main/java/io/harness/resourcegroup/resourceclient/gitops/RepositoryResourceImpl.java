@@ -1,5 +1,6 @@
 package io.harness.resourcegroup.resourceclient.gitops;
 
+import static java.util.stream.Collectors.toList;
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE;
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE_INCLUDING_CHILD_SCOPES;
 
@@ -10,24 +11,36 @@ import io.harness.beans.ScopeLevel;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
+import io.harness.gitops.remote.GitopsResourceClient;
+import io.harness.ng.beans.PageResponse;
 import io.harness.resourcegroup.beans.ValidatorType;
 import io.harness.resourcegroup.framework.service.Resource;
 import io.harness.resourcegroup.framework.service.ResourceInfo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Inject;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Singleton;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import retrofit2.Response;
 
 @Singleton
+@AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @Slf4j
 public class RepositoryResourceImpl implements Resource {
+  private GitopsResourceClient gitopsResourceClient;
   @Override
   public String getType() {
     return "GITOPS_REPOSITORY";
@@ -35,7 +48,7 @@ public class RepositoryResourceImpl implements Resource {
 
   @Override
   public Set<ScopeLevel> getValidScopeLevels() {
-    return EnumSet.of(ScopeLevel.ACCOUNT, ScopeLevel.ORGANIZATION, ScopeLevel.PROJECT);
+    return EnumSet.of(ScopeLevel.PROJECT);
   }
 
   @Override
@@ -65,7 +78,21 @@ public class RepositoryResourceImpl implements Resource {
 
   @Override
   public List<Boolean> validate(List<String> resourceIds, Scope scope) {
-    return null;
+    if (resourceIds.isEmpty()) {
+      return Collections.EMPTY_LIST;
+    }
+    Map<String, Object> filter = ImmutableMap.of("identifier", ImmutableMap.of("$in", resourceIds));
+    Response<PageResponse<String>> clusters = null;
+    try {
+      clusters = gitopsResourceClient
+                     .listRepositories(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
+                         scope.getProjectIdentifier(), 0, resourceIds.size(), filter)
+                     .execute();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    final Set<String> clusterSet = new HashSet<>(clusters.body().getContent());
+    return resourceIds.stream().map(clusterSet::contains).collect(toList());
   }
 
   @Override

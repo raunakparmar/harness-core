@@ -1,6 +1,6 @@
 # Any edit in this file should accompany an increment in version.
 name: permissionsConfiguration
-version: 16
+version: 17
 permissions:
   - identifier: core_project_delete
     name: Delete Project
@@ -846,6 +846,4 @@ permissions:
     status: STAGING
     includeInAllRoles: false
     allowedScopeLevels:
-      - account
-      - organization
       - project

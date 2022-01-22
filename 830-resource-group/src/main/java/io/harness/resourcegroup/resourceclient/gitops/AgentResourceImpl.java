@@ -12,10 +12,9 @@ import io.harness.data.structure.EmptyPredicate;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.entity_crud.EntityChangeDTO;
+import io.harness.gitops.models.Agent;
 import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.ng.beans.PageResponse;
-import io.harness.ng.core.template.TemplateSummaryResponseDTO;
-import io.harness.remote.client.NGRestUtils;
 import io.harness.resourcegroup.beans.ValidatorType;
 import io.harness.resourcegroup.framework.service.Resource;
 import io.harness.resourcegroup.framework.service.ResourceInfo;
@@ -24,6 +23,7 @@ import com.google.inject.Inject;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Singleton;
 import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -32,16 +32,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import retrofit2.Response;
 
 @Singleton
 @AllArgsConstructor(access = AccessLevel.PUBLIC, onConstructor = @__({ @Inject }))
 @Slf4j
 public class AgentResourceImpl implements Resource {
   private final GitopsResourceClient gitopsResourceClient;
+  private final int PAGE_SIZE = 100;
 
   @Override
   public String getType() {
@@ -83,13 +84,29 @@ public class AgentResourceImpl implements Resource {
     if (EmptyPredicate.isEmpty(resourceIds)) {
       return Collections.EMPTY_LIST;
     }
-    final List<String> agents =
-        NGRestUtils
-            .getResponse(gitopsResourceClient.listAgents(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
-                scope.getProjectIdentifier(), 0, resourceIds.size(), null))
-            .getContent();
-    Set<Object> validResourceIds = new HashSet<>(agents);
+    int page_idx = 0;
+    List<Agent> agents = getAgents(scope, page_idx++);
+    List<Agent> allAgents = new ArrayList<>(agents);
+    while (agents.size() == PAGE_SIZE) {
+      agents = getAgents(scope, page_idx++);
+      allAgents.addAll(agents);
+    }
+    Set<Object> validResourceIds = new HashSet<>(allAgents);
     return resourceIds.stream().map(validResourceIds::contains).collect(toList());
+  }
+
+  private List<Agent> getAgents(Scope scope, int page_idx) {
+    List<Agent> agents = new ArrayList<>();
+    try {
+      Response<PageResponse<Agent>> response = gitopsResourceClient
+                                                   .listAgents(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
+                                                       scope.getProjectIdentifier(), page_idx, PAGE_SIZE)
+                                                   .execute();
+      agents = response.body().getContent();
+    } catch (Exception e) {
+      log.error("Failed to fetch gitops agents", e);
+    }
+    return agents;
   }
 
   @Override
