@@ -12,8 +12,6 @@ import io.harness.gitops.remote.GitopsResourceClientHttpFactory;
 import io.harness.remote.client.ServiceHttpClientConfig;
 import io.harness.security.ServiceTokenGenerator;
 import io.harness.serializer.kryo.KryoConverterFactory;
-import io.harness.template.remote.TemplateResourceClient;
-import io.harness.template.remote.TemplateResourceClientHttpFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
