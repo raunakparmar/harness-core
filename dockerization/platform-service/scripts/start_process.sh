@@ -6,6 +6,8 @@
 
 set -x
 
+java -version
+
 if [[ -v "{hostname}" ]]; then
    export HOSTNAME=$(hostname)
 fi
