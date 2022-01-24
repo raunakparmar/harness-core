@@ -88,7 +88,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.mongodb.morphia.annotations.Transient;
 
 /**
@@ -265,7 +264,6 @@ public abstract class NodeSelectState extends State {
     return executionResponse.build();
   }
 
-  @NotNull
   private List<String> getResolvedHosts(ExecutionContext context, List<String> hosts) {
     return hosts.stream()
         .map(context::renderExpression)
