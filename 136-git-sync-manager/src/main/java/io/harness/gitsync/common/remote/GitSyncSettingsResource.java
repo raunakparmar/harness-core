@@ -94,10 +94,11 @@ public class GitSyncSettingsResource {
       @Valid GitSyncSettingsDTO gitSyncSettings) {
     // todo(abhinav): when git sync comes at other level see for new permission
     accessControlClient.checkForAccessOrThrow(
-        ResourceScope.of(gitSyncSettings.getAccountIdentifier(), gitSyncSettings.getOrganizationIdentifier(),
-            gitSyncSettings.getProjectIdentifier()),
+        ResourceScope.of(
+            accountIdentifier, gitSyncSettings.getOrganizationIdentifier(), gitSyncSettings.getProjectIdentifier()),
         Resource.of(ResourceTypes.PROJECT, gitSyncSettings.getProjectIdentifier()), EDIT_PROJECT_PERMISSION);
 
+    gitSyncSettings.setAccountIdentifier(accountIdentifier);
     return ResponseDTO.newResponse(gitSyncSettingsService.save(gitSyncSettings));
   }
 
