@@ -143,7 +143,7 @@ public class ResourceGroupModule extends AbstractModule {
         ServiceHttpClientConfig.builder().baseUrl(resourceClients.getTemplateService().getBaseUrl()).build(),
         resourceClients.getTemplateService().getSecret(), RESOUCE_GROUP_SERVICE.toString()));
     install(new GitopsResourceClientModule(
-            ServiceHttpClientConfig.builder().baseUrl(resourceClients.getGitopsService().getBaseUrl()).build(),
-            resourceClients.getGitopsService().getSecret(), RESOUCE_GROUP_SERVICE.toString()));
+        ServiceHttpClientConfig.builder().baseUrl(resourceClients.getGitopsService().getBaseUrl()).build(),
+        resourceClients.getGitopsService().getSecret(), RESOUCE_GROUP_SERVICE.toString()));
   }
 }
