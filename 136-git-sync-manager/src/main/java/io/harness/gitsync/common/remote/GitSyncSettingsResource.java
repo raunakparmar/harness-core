@@ -130,13 +130,16 @@ public class GitSyncSettingsResource {
           "This updates the existing Git Sync settings within the scope. Only changing Connectivity Mode is allowed",
       responses = { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Updated Git Sync Setting") })
   public ResponseDTO<GitSyncSettingsDTO>
-  update(@RequestBody(required = true,
-      description = "This contains details of Git Sync Settings") @NotNull @Valid GitSyncSettingsDTO gitSyncSettings) {
+  update(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotEmpty @QueryParam(
+             ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
+      @RequestBody(required = true, description = "This contains details of Git Sync Settings") @NotNull
+      @Valid GitSyncSettingsDTO gitSyncSettings) {
     accessControlClient.checkForAccessOrThrow(
-        ResourceScope.of(gitSyncSettings.getAccountIdentifier(), gitSyncSettings.getOrganizationIdentifier(),
-            gitSyncSettings.getProjectIdentifier()),
+        ResourceScope.of(
+            accountIdentifier, gitSyncSettings.getOrganizationIdentifier(), gitSyncSettings.getProjectIdentifier()),
         Resource.of(ResourceTypes.PROJECT, gitSyncSettings.getProjectIdentifier()), EDIT_PROJECT_PERMISSION);
 
+    gitSyncSettings.setAccountIdentifier(accountIdentifier);
     return ResponseDTO.newResponse(gitSyncSettingsService.update(gitSyncSettings));
   }
 }
