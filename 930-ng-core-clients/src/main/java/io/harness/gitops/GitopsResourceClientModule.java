@@ -21,28 +21,26 @@ import com.google.inject.Provides;
 import com.google.inject.Scopes;
 
 public class GitopsResourceClientModule extends AbstractModule {
-    private final ServiceHttpClientConfig ngManagerClientConfig;
-    private final String serviceSecret;
-    private final String clientId;
+  private final ServiceHttpClientConfig ngManagerClientConfig;
+  private final String serviceSecret;
+  private final String clientId;
 
-    @Inject
-    public GitopsResourceClientModule(
-            ServiceHttpClientConfig ngManagerClientConfig, String serviceSecret, String clientId) {
-        this.ngManagerClientConfig = ngManagerClientConfig;
-        this.serviceSecret = serviceSecret;
-        this.clientId = clientId;
-    }
+  @Inject
+  public GitopsResourceClientModule(
+      ServiceHttpClientConfig ngManagerClientConfig, String serviceSecret, String clientId) {
+    this.ngManagerClientConfig = ngManagerClientConfig;
+    this.serviceSecret = serviceSecret;
+    this.clientId = clientId;
+  }
 
-    @Provides
-    private GitopsResourceClientHttpFactory templateResourceClientHttpFactory(
-            KryoConverterFactory kryoConverterFactory) {
-        return new GitopsResourceClientHttpFactory(
-                this.ngManagerClientConfig, this.serviceSecret, new ServiceTokenGenerator(), kryoConverterFactory, clientId);
-    }
+  @Provides
+  private GitopsResourceClientHttpFactory templateResourceClientHttpFactory(KryoConverterFactory kryoConverterFactory) {
+    return new GitopsResourceClientHttpFactory(
+        this.ngManagerClientConfig, this.serviceSecret, new ServiceTokenGenerator(), kryoConverterFactory, clientId);
+  }
 
-    @Override
-    protected void configure() {
-        this.bind(GitopsResourceClient.class).toProvider(GitopsResourceClientHttpFactory.class).in(Scopes.SINGLETON);
-    }
-
+  @Override
+  protected void configure() {
+    this.bind(GitopsResourceClient.class).toProvider(GitopsResourceClientHttpFactory.class).in(Scopes.SINGLETON);
+  }
 }
