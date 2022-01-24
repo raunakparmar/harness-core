@@ -87,7 +87,7 @@ public class GitSyncSettingsResource {
       responses =
       { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created Git Sync Setting") })
   public ResponseDTO<GitSyncSettingsDTO>
-  create(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotEmpty @QueryParam(
+  create(@Parameter(description = ACCOUNT_PARAM_MESSAGE, required = true) @NotEmpty @QueryParam(
              ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @RequestBody(required = true,
           description = "This contains details of Git Sync settings like - (scope, executionOnDelegate)") @NotNull
