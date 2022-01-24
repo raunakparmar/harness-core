@@ -168,7 +168,7 @@ public class HelmClientImpl implements HelmClient {
 
     String commandFlags = helmCommandData.getCommandFlags();
     if (HelmVersion.V2.equals(helmCommandData.getHelmVersion())) {
-      StringUtils.replace(commandFlags, DEBUG_COMMAND_FLAG, EMPTY);
+      commandFlags = StringUtils.replaceIgnoreCase(commandFlags, DEBUG_COMMAND_FLAG, EMPTY);
     }
     releaseHistory = applyCommandFlags(releaseHistory, commandType, commandFlags, helmCommandData.isHelmCmdFlagsNull(),
         helmCommandData.getValueMap(), helmCommandData.getHelmVersion());
@@ -195,7 +195,7 @@ public class HelmClientImpl implements HelmClient {
 
     String commandFlags = helmCommandData.getCommandFlags();
     if (HelmVersion.V2.equals(helmCommandData.getHelmVersion())) {
-      StringUtils.replace(commandFlags, DEBUG_COMMAND_FLAG, EMPTY);
+      commandFlags = StringUtils.replaceIgnoreCase(commandFlags, DEBUG_COMMAND_FLAG, EMPTY);
     }
     listRelease = applyCommandFlags(listRelease, commandType, commandFlags, helmCommandData.isHelmCmdFlagsNull(),
         helmCommandData.getValueMap(), helmCommandData.getHelmVersion());
