@@ -7,6 +7,7 @@
 
 package io.harness.gitsync.common.remote;
 
+import static io.harness.NGCommonEntityConstants.ACCOUNT_KEY;
 import static io.harness.NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_JSON_MEDIA_TYPE;
 import static io.harness.NGCommonEntityConstants.APPLICATION_YAML_MEDIA_TYPE;
@@ -20,6 +21,7 @@ import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.ng.core.rbac.ProjectPermissions.EDIT_PROJECT_PERMISSION;
 
 import io.harness.NGCommonEntityConstants;
+import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.clients.AccessControlClient;
 import io.harness.accesscontrol.clients.Resource;
 import io.harness.accesscontrol.clients.ResourceScope;
@@ -85,9 +87,11 @@ public class GitSyncSettingsResource {
       responses =
       { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Successfully created Git Sync Setting") })
   public ResponseDTO<GitSyncSettingsDTO>
-  create(@RequestBody(
-      required = true, description = "This contains details of Git Sync settings like - (scope, executionOnDelegate)")
-      @NotNull @Valid GitSyncSettingsDTO gitSyncSettings) {
+  create(@Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotEmpty @QueryParam(
+             ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
+      @RequestBody(required = true,
+          description = "This contains details of Git Sync settings like - (scope, executionOnDelegate)") @NotNull
+      @Valid GitSyncSettingsDTO gitSyncSettings) {
     // todo(abhinav): when git sync comes at other level see for new permission
     accessControlClient.checkForAccessOrThrow(
         ResourceScope.of(gitSyncSettings.getAccountIdentifier(), gitSyncSettings.getOrganizationIdentifier(),
@@ -107,8 +111,7 @@ public class GitSyncSettingsResource {
           NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
       @Parameter(description = ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) String organizationIdentifier,
-      @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier) {
+      @Parameter(description = ACCOUNT_PARAM_MESSAGE) @QueryParam(ACCOUNT_KEY) @NotEmpty String accountIdentifier) {
     final Optional<GitSyncSettingsDTO> gitSyncSettingsDTO =
         gitSyncSettingsService.get(accountIdentifier, organizationIdentifier, projectIdentifier);
     return gitSyncSettingsDTO.map(ResponseDTO::newResponse)
