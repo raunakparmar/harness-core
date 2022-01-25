@@ -14,12 +14,8 @@ import io.harness.beans.IdentifierRef;
 import io.harness.cdng.featureFlag.CDFeatureFlagHelper;
 import io.harness.common.ParameterFieldHelper;
 import io.harness.delegate.beans.TaskData;
-import io.harness.delegate.task.terraform.TFTaskType;
-import io.harness.delegate.task.terraform.TerraformCommand;
-import io.harness.delegate.task.terraform.TerraformCommandUnit;
-import io.harness.delegate.task.terraform.TerraformTaskNGParameters;
+import io.harness.delegate.task.terraform.*;
 import io.harness.delegate.task.terraform.TerraformTaskNGParameters.TerraformTaskNGParametersBuilder;
-import io.harness.delegate.task.terraform.TerraformTaskNGResponse;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.WingsException;
 import io.harness.executions.steps.ExecutionNodeType;
@@ -124,6 +120,8 @@ public class TerraformPlanStep extends TaskExecutableWithRollbackAndRbac<Terrafo
         .currentStateFileId(helper.getLatestFileId(entityId))
         .workspace(ParameterFieldHelper.getParameterFieldValue(configuration.getWorkspace()))
         .configFile(helper.getGitFetchFilesConfig(
+            configuration.getConfigFiles().getStore().getSpec(), ambiance, TerraformStepHelper.TF_CONFIG_FILES))
+        .fileStoreConfigFiles(helper.getFileFactoryFetchFilesConfig(
             configuration.getConfigFiles().getStore().getSpec(), ambiance, TerraformStepHelper.TF_CONFIG_FILES))
         .varFileInfos(helper.toTerraformVarFileInfo(configuration.getVarFiles(), ambiance))
         .backendConfig(helper.getBackendConfig(configuration.getBackendConfig()))

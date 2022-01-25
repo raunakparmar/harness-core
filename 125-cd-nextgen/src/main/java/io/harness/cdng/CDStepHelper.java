@@ -40,18 +40,14 @@ import io.harness.cdng.manifest.ManifestStoreType;
 import io.harness.cdng.manifest.ManifestType;
 import io.harness.cdng.manifest.mappers.ManifestOutcomeValidator;
 import io.harness.cdng.manifest.steps.ManifestsOutcome;
-import io.harness.cdng.manifest.yaml.GcsStoreConfig;
-import io.harness.cdng.manifest.yaml.GitStoreConfig;
-import io.harness.cdng.manifest.yaml.HttpStoreConfig;
-import io.harness.cdng.manifest.yaml.ManifestOutcome;
-import io.harness.cdng.manifest.yaml.S3StoreConfig;
-import io.harness.cdng.manifest.yaml.ValuesManifestOutcome;
+import io.harness.cdng.manifest.yaml.*;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.common.NGTimeConversionHelper;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.helper.GitApiAccessDecryptionHelper;
 import io.harness.connector.services.ConnectorService;
 import io.harness.connector.validator.scmValidators.GitConfigAuthenticationInfoHelper;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryConnectorDTO;
 import io.harness.delegate.beans.connector.awsconnector.AwsConnectorDTO;
 import io.harness.delegate.beans.connector.gcpconnector.GcpConnectorDTO;
 import io.harness.delegate.beans.connector.helm.HttpHelmConnectorDTO;
@@ -60,26 +56,10 @@ import io.harness.delegate.beans.connector.scm.ScmConnector;
 import io.harness.delegate.beans.connector.scm.adapter.ScmConnectorMapper;
 import io.harness.delegate.beans.connector.scm.bitbucket.BitbucketConnectorDTO;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
-import io.harness.delegate.beans.connector.scm.github.GithubApiAccessDTO;
-import io.harness.delegate.beans.connector.scm.github.GithubApiAccessType;
-import io.harness.delegate.beans.connector.scm.github.GithubConnectorDTO;
-import io.harness.delegate.beans.connector.scm.github.GithubHttpAuthenticationType;
-import io.harness.delegate.beans.connector.scm.github.GithubHttpCredentialsDTO;
-import io.harness.delegate.beans.connector.scm.github.GithubTokenSpecDTO;
-import io.harness.delegate.beans.connector.scm.github.GithubUsernameTokenDTO;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabApiAccessDTO;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabApiAccessType;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabConnectorDTO;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabHttpAuthenticationType;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabHttpCredentialsDTO;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabTokenSpecDTO;
-import io.harness.delegate.beans.connector.scm.gitlab.GitlabUsernameTokenDTO;
+import io.harness.delegate.beans.connector.scm.github.*;
+import io.harness.delegate.beans.connector.scm.gitlab.*;
 import io.harness.delegate.beans.logstreaming.UnitProgressData;
-import io.harness.delegate.beans.storeconfig.GcsHelmStoreDelegateConfig;
-import io.harness.delegate.beans.storeconfig.GitStoreDelegateConfig;
-import io.harness.delegate.beans.storeconfig.HttpHelmStoreDelegateConfig;
-import io.harness.delegate.beans.storeconfig.S3HelmStoreDelegateConfig;
-import io.harness.delegate.beans.storeconfig.StoreDelegateConfig;
+import io.harness.delegate.beans.storeconfig.*;
 import io.harness.delegate.task.git.GitFetchFilesConfig;
 import io.harness.delegate.task.k8s.K8sInfraDelegateConfig;
 import io.harness.encryption.SecretRefData;
@@ -443,6 +423,12 @@ public class CDStepHelper {
         if (!((connectorInfoDTO.getConnectorConfig()) instanceof AwsConnectorDTO)) {
           throw new InvalidRequestException(
               format("Invalid connector selected in %s. Select Amazon Web Services connector", message));
+        }
+        break;
+      case ManifestStoreType.ARTIFACTORY:
+        if (!((connectorInfoDTO.getConnectorConfig()) instanceof ArtifactoryConnectorDTO)) {
+          throw new InvalidRequestException(
+              format("Invalid connector selected in %s. Select Artifactory connector", message));
         }
         break;
 
