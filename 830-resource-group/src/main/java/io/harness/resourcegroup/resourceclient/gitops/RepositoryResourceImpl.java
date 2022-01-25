@@ -88,7 +88,7 @@ public class RepositoryResourceImpl implements Resource {
     try {
       response = gitopsResourceClient
                      .listRepositories(scope.getAccountIdentifier(), scope.getOrgIdentifier(),
-                         scope.getProjectIdentifier(), 0, resourceIds.size(), filter)
+                         scope.getProjectIdentifier(), 0, resourceIds.size())
                      .execute();
     } catch (IOException e) {
       throw new InvalidRequestException("failed to verify repository identifiers");

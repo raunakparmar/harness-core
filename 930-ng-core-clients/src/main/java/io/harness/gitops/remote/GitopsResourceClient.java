@@ -34,19 +34,17 @@ public interface GitopsResourceClient {
       @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
       @Body Object filter);
 
-  @POST("repositories")
+  @GET("repositories")
   Call<PageResponse<Repository>> listRepositories(
       @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
       @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
-      @Body Object filter);
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size);
 
-  @POST("clusters")
+  @GET("clusters")
   Call<PageResponse<Cluster>> listClusters(
       @Query(value = NGCommonEntityConstants.ACCOUNT_KEY) @NotEmpty String accountIdentifier,
       @Query(value = NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @Query(value = NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier,
-      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size,
-      @Body Object filter);
+      @Query(value = NGResourceFilterConstants.PAGE_KEY) int page, @Query(NGResourceFilterConstants.SIZE_KEY) int size);
 }

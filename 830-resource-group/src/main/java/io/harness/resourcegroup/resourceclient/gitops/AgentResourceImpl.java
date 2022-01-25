@@ -105,7 +105,7 @@ public class AgentResourceImpl implements Resource {
                                                    .execute();
       agents = response.body().getContent();
     } catch (Exception e) {
-      throw new InvalidRequestException("failed to verify agent identifiers");
+      throw new InvalidRequestException("failed to verify agent identifiers", e);
     }
     return agents;
   }

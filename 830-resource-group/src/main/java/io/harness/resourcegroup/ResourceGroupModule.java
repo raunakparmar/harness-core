@@ -20,6 +20,7 @@ import io.harness.delegate.DelegateServiceResourceClient;
 import io.harness.delegate.DelegateServiceResourceClientModule;
 import io.harness.environment.EnvironmentResourceClientModule;
 import io.harness.gitops.GitopsResourceClientModule;
+import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.migration.NGMigrationSdkModule;
 import io.harness.organization.OrganizationClientModule;
 import io.harness.organization.remote.OrganizationClient;
@@ -106,6 +107,7 @@ public class ResourceGroupModule extends AbstractModule {
     requireBinding(AccountClient.class);
     requireBinding(DelegateServiceResourceClient.class);
     requireBinding(TemplateResourceClient.class);
+    requireBinding(GitopsResourceClient.class);
   }
 
   private void installResourceValidators() {

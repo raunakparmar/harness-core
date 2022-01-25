@@ -89,7 +89,7 @@ public class ClusterResourceImpl implements Resource {
     try {
       response = gitopsResourceClient
                      .listClusters(scope.getAccountIdentifier(), scope.getOrgIdentifier(), scope.getProjectIdentifier(),
-                         0, resourceIds.size(), filter)
+                         0, resourceIds.size())
                      .execute();
       final List<Cluster> clusters = response.body().getContent();
       final Set<String> clusterSet = clusters.stream().map(Cluster::getIdentifier).collect(Collectors.toSet());
