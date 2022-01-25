@@ -33,8 +33,6 @@ public class DelegateMetricsServiceImpl implements DelegateMetricsService {
   public static final String DELEGATE_TASK_ACQUIRE_FAILED = "delegate_task_acquire_failed";
   public static final String DELEGATE_TASK_EXPIRED = "delegate_task_expired";
   public static final String DELEGATE_TASK_ACQUIRE_LIMIT_EXCEEDED = "delegate_task_acquire_limit_exceeded";
-
-  public static final String DELEGATE_REGISTRATION = "delegate_registration";
   public static final String DELEGATE_REGISTRATION_FAILED = "delegate_registration_failed";
 
   @Inject private MetricService metricService;
