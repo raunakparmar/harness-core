@@ -592,6 +592,15 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
+  public Map<String, List<String>> getActiveDelegatesWithPrimary() {
+    String primaryVersion = Arrays.stream(configurationController.getPrimaryVersion().split("-")).findFirst().get();
+    Map<String, List<String>> delegatesPerVersion =
+        delegateConnectionDao.obtainActiveDelegatesPerVersion(primaryVersion);
+
+    return delegatesPerVersion;
+  }
+
+  @Override
   public DelegateSetupDetails validateKubernetesYaml(String accountId, DelegateSetupDetails delegateSetupDetails) {
     validateKubernetesSetupDetails(accountId, delegateSetupDetails);
     return delegateSetupDetails;

@@ -213,6 +213,23 @@ public class DelegateSetupResourceV3 {
   }
 
   @GET
+  @Path("delegates-with-primary")
+  @Timed
+  @ExceptionMetered
+  @PublicApi
+  @Operation(operationId = "getActiveDelegatesWithPrimary",
+      summary = "List all AccountId along with corresponding DelegateIDs in primary version.",
+      responses =
+      {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "default",
+            description = "A list of accountID along with their DelegateIDs having primary version.")
+      })
+  public RestResponse<Map<String, List<String>>>
+  getActiveDelegatesWithPrimary() {
+    return new RestResponse<>(delegateService.getActiveDelegatesWithPrimary());
+  }
+
+  @GET
   @Path("latest")
   @Timed
   @ExceptionMetered

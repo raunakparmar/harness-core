@@ -190,6 +190,15 @@ public class DelegateSetupResource {
   }
 
   @GET
+  @Path("delegates-with-primary")
+  @Timed
+  @ExceptionMetered
+  @PublicApi
+  public RestResponse<Map<String, List<String>>> getDelegatesWithPrimary() {
+    return new RestResponse<>(delegateService.getActiveDelegatesWithPrimary());
+  }
+
+  @GET
   @Path("latest")
   @Timed
   @ExceptionMetered
