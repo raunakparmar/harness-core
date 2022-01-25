@@ -113,6 +113,7 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
           projectParams.getProjectIdentifier()));
     }
     serviceLevelIndicatorService.deleteByIdentifier(projectParams, serviceLevelObjective.getServiceLevelIndicators());
+    sloHealthIndicatorService.delete(projectParams, serviceLevelObjective.getIdentifier());
     return hPersistence.delete(serviceLevelObjective);
   }
 
