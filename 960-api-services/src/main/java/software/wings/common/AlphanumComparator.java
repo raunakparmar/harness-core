@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 @OwnedBy(CDC)
-@TargetModule(HarnessModule._960_API_SERVICES)
 public class AlphanumComparator implements Comparator<String>, Serializable {
   @Override
   public int compare(String s1, String s2) {
