@@ -154,6 +154,9 @@ public class TerraformStepHelper {
   }
 
   public GitFetchFilesConfig getGitFetchFilesConfig(StoreConfig store, Ambiance ambiance, String identifier) {
+    if (store == null) {
+      return null;
+    }
     GitStoreConfig gitStoreConfig;
     try {
       gitStoreConfig = (GitStoreConfig) store;
@@ -210,6 +213,9 @@ public class TerraformStepHelper {
 
   public FileStoreFetchFilesConfig getFileFactoryFetchFilesConfig(
       StoreConfig store, Ambiance ambiance, String identifier) {
+    if (store == null) {
+      return null;
+    }
     ArtifactoryStoreConfig artifactoryStoreConfig;
     try {
       artifactoryStoreConfig = (ArtifactoryStoreConfig) store;
@@ -622,7 +628,13 @@ public class TerraformStepHelper {
               ((TerraformRemoteVarFileConfig) fileConfig).getGitStoreConfigDTO().toGitStoreConfig();
           GitFetchFilesConfig gitFetchFilesConfig =
               getGitFetchFilesConfig(gitStoreConfig, ambiance, format(TerraformStepHelper.TF_VAR_FILES, i));
-          varFileInfo.add(RemoteTerraformVarFileInfo.builder().gitFetchFilesConfig(gitFetchFilesConfig).build());
+          StoreConfig fileStoreConfig = ((TerraformRemoteVarFileConfig) fileConfig).getFileStoreConfig();
+          FileStoreFetchFilesConfig fileStoreFetchFilesConfig =
+              getFileFactoryFetchFilesConfig(fileStoreConfig, ambiance, format(TerraformStepHelper.TF_VAR_FILES, i));
+          varFileInfo.add(RemoteTerraformVarFileInfo.builder()
+                              .gitFetchFilesConfig(gitFetchFilesConfig)
+                              .filestoreFetchFilesConfig(fileStoreFetchFilesConfig)
+                              .build());
         }
       }
       return varFileInfo;

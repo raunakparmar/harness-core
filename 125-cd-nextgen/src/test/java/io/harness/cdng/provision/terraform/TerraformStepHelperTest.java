@@ -9,20 +9,13 @@ package io.harness.cdng.provision.terraform;
 
 import static io.harness.cdng.provision.terraform.TerraformPlanCommand.APPLY;
 import static io.harness.delegate.beans.connector.ConnectorType.GITHUB;
-import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
-import static io.harness.rule.OwnerRule.ROHITKARELIA;
-import static io.harness.rule.OwnerRule.SATYAM;
-import static io.harness.rule.OwnerRule.TMACARI;
+import static io.harness.rule.OwnerRule.*;
 
 import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -39,14 +32,21 @@ import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
 import io.harness.common.ParameterFieldHelper;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.validator.scmValidators.GitConfigAuthenticationInfoHelper;
+import io.harness.delegate.beans.connector.ConnectorType;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryAuthType;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryAuthenticationDTO;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryConnectorDTO;
+import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryUsernamePasswordAuthDTO;
 import io.harness.delegate.beans.connector.scm.GitAuthType;
 import io.harness.delegate.beans.connector.scm.GitConnectionType;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
+import io.harness.delegate.beans.storeconfig.ArtifactoryStoreDelegateConfig;
 import io.harness.delegate.beans.storeconfig.FetchType;
 import io.harness.delegate.task.terraform.InlineTerraformVarFileInfo;
 import io.harness.delegate.task.terraform.RemoteTerraformVarFileInfo;
 import io.harness.delegate.task.terraform.TerraformTaskNGResponse;
 import io.harness.delegate.task.terraform.TerraformVarFileInfo;
+import io.harness.encryption.SecretRefData;
 import io.harness.exception.GeneralException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.filesystem.FileIo;
@@ -68,12 +68,7 @@ import io.harness.security.encryption.EncryptionType;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
@@ -448,6 +443,175 @@ public class TerraformStepHelperTest extends CategoryTest {
   }
 
   @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testToTerraformVarFileInfoWithArtifactoryStore() {
+    Ambiance ambiance = getAmbiance();
+    artifactoryStoreConfig artifactoryStoreVarFiles = artifactoryStoreConfig.builder()
+                                                          .artifactoryName("ArtifactoryName")
+                                                          .repositoryPath("RepositoryPath")
+                                                          .version("Version")
+                                                          .connectorRef("ConnectorRef")
+                                                          .build();
+
+    RemoteTerraformVarFileSpec remoteVarFiles =
+        generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFiles);
+    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+    // Create auth with user and password
+    char[] password = {'r', 's', 't', 'u', 'v'};
+    ArtifactoryAuthenticationDTO artifactoryAuthenticationDTO =
+        ArtifactoryAuthenticationDTO.builder()
+            .authType(ArtifactoryAuthType.USER_PASSWORD)
+            .credentials(ArtifactoryUsernamePasswordAuthDTO.builder()
+                             .username("username")
+                             .passwordRef(SecretRefData.builder().decryptedValue(password).build())
+                             .build())
+            .build();
+    ArtifactoryConnectorDTO artifactoryConnectorDTO = ArtifactoryConnectorDTO.builder()
+                                                          .artifactoryServerUrl("http://artifactory.com")
+                                                          .auth(artifactoryAuthenticationDTO)
+                                                          .delegateSelectors(Collections.singleton("delegateSelector"))
+                                                          .build();
+    ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()
+                                            .connectorType(ConnectorType.ARTIFACTORY)
+                                            .identifier("connectorRef")
+                                            .name("connectorName")
+                                            .connectorConfig(artifactoryConnectorDTO)
+                                            .build();
+    doReturn(connectorInfoDTO).when(mockK8sStepHelper).getConnector(anyString(), any());
+    List<TerraformVarFileInfo> terraformVarFileInfos = helper.toTerraformVarFileInfo(varFilesMap, ambiance);
+    assertThat(terraformVarFileInfos).isNotNull();
+    assertThat(terraformVarFileInfos.size()).isEqualTo(2);
+    TerraformVarFileInfo terraformVarFileInfo = terraformVarFileInfos.get(1);
+    assertThat(terraformVarFileInfo instanceof InlineTerraformVarFileInfo).isTrue();
+    InlineTerraformVarFileInfo inlineTerraformVarFileInfo = (InlineTerraformVarFileInfo) terraformVarFileInfo;
+    assertThat(inlineTerraformVarFileInfo.getVarFileContent()).isEqualTo("var-content");
+    terraformVarFileInfo = terraformVarFileInfos.get(0);
+    assertThat(terraformVarFileInfo instanceof RemoteTerraformVarFileInfo).isTrue();
+    RemoteTerraformVarFileInfo remoteTerraformVarFileInfo = (RemoteTerraformVarFileInfo) terraformVarFileInfo;
+    ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
+        (ArtifactoryStoreDelegateConfig) remoteTerraformVarFileInfo.getFilestoreFetchFilesConfig();
+    assertThat(artifactoryStoreDelegateConfig.getArtifactName()).isEqualTo("ArtifactoryName");
+    assertThat(artifactoryStoreDelegateConfig.getVersion()).isEqualTo("Version");
+    assertThat(artifactoryStoreDelegateConfig.getRepositoryPath()).isEqualTo("RepositoryPath");
+    assertThat(artifactoryStoreDelegateConfig.getConnectorDTO().getName()).isEqualTo("connectorName");
+    assertThat(artifactoryStoreDelegateConfig.getConnectorDTO().getConnectorConfig() instanceof ArtifactoryConnectorDTO)
+        .isTrue();
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testToTerraformVarFileInfoWithSeveralFilesStore() {
+    Ambiance ambiance = getAmbiance();
+
+    // Create 3 var files with different stores at the same time
+    artifactoryStoreConfig artifactoryStoreVarFilesA = artifactoryStoreConfig.builder()
+                                                           .artifactoryName("ArtifactoryName")
+                                                           .repositoryPath("RepositoryPath")
+                                                           .version("Version")
+                                                           .connectorRef("ConnectorRef")
+                                                           .build();
+    artifactoryStoreConfig artifactoryStoreVarFilesB = artifactoryStoreConfig.builder()
+                                                           .artifactoryName("ArtifactoryName2")
+                                                           .repositoryPath("RepositoryPath2")
+                                                           .version("Version2")
+                                                           .connectorRef("ConnectorRef")
+                                                           .build();
+    gitStoreConfig gitStoreVarFiles =
+        gitStoreConfig.builder()
+            .branch(("master"))
+            .fetchType(FetchType.BRANCH)
+            .folderPath(ParameterField.createValueField("VarFiles/"))
+            .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
+            .connectoref(ParameterField.createValueField("ConnectorRef2"))
+            .build();
+
+    RemoteTerraformVarFileSpec remoteVarFiles =
+        generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFilesA);
+    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+    // Add the second file with different artifactory values but same connectorRef
+    varFilesMap.put("var-file-3",
+        TerraformVarFile.builder()
+            .identifier("var-file-3")
+            .type("Remote")
+            .spec(generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFilesB))
+            .build());
+    // Add another var file with a different connector. This one is a github connector
+    varFilesMap.put("var-file-4",
+        TerraformVarFile.builder()
+            .identifier("var-file-4")
+            .type("Remote")
+            .spec(generateRemoteVarFileSpec(StoreConfigType.GITHUB, gitStoreVarFiles))
+            .build());
+    // Create base auth for the artifactory connector
+    char[] password = {'r', 's', 't', 'u', 'v'};
+    ArtifactoryAuthenticationDTO artifactoryAuthenticationDTO =
+        ArtifactoryAuthenticationDTO.builder()
+            .authType(ArtifactoryAuthType.USER_PASSWORD)
+            .credentials(ArtifactoryUsernamePasswordAuthDTO.builder()
+                             .username("username")
+                             .passwordRef(SecretRefData.builder().decryptedValue(password).build())
+                             .build())
+            .build();
+    ArtifactoryConnectorDTO artifactoryConnectorDTO = ArtifactoryConnectorDTO.builder()
+                                                          .artifactoryServerUrl("http://artifactory.com")
+                                                          .auth(artifactoryAuthenticationDTO)
+                                                          .delegateSelectors(Collections.singleton("delegateSelector"))
+                                                          .build();
+    ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()
+                                            .connectorType(ConnectorType.ARTIFACTORY)
+                                            .identifier("connectorRef")
+                                            .name("connectorName")
+                                            .connectorConfig(artifactoryConnectorDTO)
+                                            .build();
+    when(mockK8sStepHelper.getConnector(anyString(), any()))
+        .thenReturn(connectorInfoDTO, connectorInfoDTO,
+            ConnectorInfoDTO.builder()
+                .connectorConfig(GitConfigDTO.builder().gitAuthType(GitAuthType.SSH).build())
+                .build());
+    List<TerraformVarFileInfo> terraformVarFileInfos = helper.toTerraformVarFileInfo(varFilesMap, ambiance);
+    assertThat(terraformVarFileInfos).isNotNull();
+    assertThat(terraformVarFileInfos.size()).isEqualTo(4);
+    TerraformVarFileInfo terraformVarFileInfo = terraformVarFileInfos.get(1);
+    assertThat(terraformVarFileInfo instanceof InlineTerraformVarFileInfo).isTrue();
+    InlineTerraformVarFileInfo inlineTerraformVarFileInfo = (InlineTerraformVarFileInfo) terraformVarFileInfo;
+    assertThat(inlineTerraformVarFileInfo.getVarFileContent()).isEqualTo("var-content");
+    terraformVarFileInfo = terraformVarFileInfos.get(0);
+    assertThat(terraformVarFileInfo instanceof RemoteTerraformVarFileInfo).isTrue();
+    RemoteTerraformVarFileInfo remoteTerraformVarFileInfo = (RemoteTerraformVarFileInfo) terraformVarFileInfo;
+    ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
+        (ArtifactoryStoreDelegateConfig) remoteTerraformVarFileInfo.getFilestoreFetchFilesConfig();
+    assertThat(artifactoryStoreDelegateConfig.getArtifactName()).isEqualTo("ArtifactoryName");
+    assertThat(artifactoryStoreDelegateConfig.getVersion()).isEqualTo("Version");
+    assertThat(artifactoryStoreDelegateConfig.getRepositoryPath()).isEqualTo("RepositoryPath");
+    assertThat(artifactoryStoreDelegateConfig.getConnectorDTO().getName()).isEqualTo("connectorName");
+    assertThat(artifactoryStoreDelegateConfig.getConnectorDTO().getConnectorConfig() instanceof ArtifactoryConnectorDTO)
+        .isTrue();
+    terraformVarFileInfo = terraformVarFileInfos.get(2);
+    assertThat(terraformVarFileInfo instanceof RemoteTerraformVarFileInfo).isTrue();
+    RemoteTerraformVarFileInfo remoteTerraformVarFileInfoB = (RemoteTerraformVarFileInfo) terraformVarFileInfo;
+    ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfigB =
+        (ArtifactoryStoreDelegateConfig) remoteTerraformVarFileInfoB.getFilestoreFetchFilesConfig();
+    assertThat(artifactoryStoreDelegateConfigB.getArtifactName()).isEqualTo("ArtifactoryName2");
+    assertThat(artifactoryStoreDelegateConfigB.getVersion()).isEqualTo("Version2");
+    assertThat(artifactoryStoreDelegateConfigB.getRepositoryPath()).isEqualTo("RepositoryPath2");
+    assertThat(artifactoryStoreDelegateConfigB.getConnectorDTO().getName()).isEqualTo("connectorName");
+    assertThat(
+        artifactoryStoreDelegateConfigB.getConnectorDTO().getConnectorConfig() instanceof ArtifactoryConnectorDTO)
+        .isTrue();
+    terraformVarFileInfo = terraformVarFileInfos.get(3);
+    assertThat(terraformVarFileInfo instanceof RemoteTerraformVarFileInfo).isTrue();
+    RemoteTerraformVarFileInfo remoteTerraformVarFileInfoC = (RemoteTerraformVarFileInfo) terraformVarFileInfo;
+    assertThat(remoteTerraformVarFileInfoC.getGitFetchFilesConfig().getGitStoreDelegateConfig().getBranch())
+        .isEqualTo("master");
+    assertThat(remoteTerraformVarFileInfoC.getGitFetchFilesConfig().getGitStoreDelegateConfig().getPaths().get(0))
+        .isEqualTo("VarFiles/");
+    assertThat(remoteTerraformVarFileInfoC.getGitFetchFilesConfig().getGitStoreDelegateConfig().getFetchType())
+        .isEqualTo(FetchType.BRANCH);
+  }
+
+  @Test
   @Owner(developers = ROHITKARELIA)
   @Category(UnitTests.class)
   public void testGenerateFullIdentifier() throws IOException {
@@ -472,7 +636,7 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Test
   @Owner(developers = NAMAN_TALAYCHA)
   @Category(UnitTests.class)
-  public void testPrepareTerraformVarFileInfo() {
+  public void testPrepareTerraformVarFileInfoWithGitStore() {
     Ambiance ambiance = getAmbiance();
     ConnectorInfoDTO connectorInfo = ConnectorInfoDTO.builder()
                                          .name("terraform")
@@ -533,6 +697,64 @@ public class TerraformStepHelperTest extends CategoryTest {
         assertThat(
             remoteTerraformVarFileInfo.getGitFetchFilesConfig().getGitStoreDelegateConfig().getGitConfigDTO().getUrl())
             .isEqualTo("https://github.com/wings-software/terraform");
+      }
+    }
+  }
+
+  @Test
+  @Owner(developers = NGONZALEZ)
+  @Category(UnitTests.class)
+  public void testPrepareTerraformVarFileInfoWithFileStore() {
+    Ambiance ambiance = getAmbiance();
+    artifactoryStoreConfig artifactoryStoreVarFiles = artifactoryStoreConfig.builder()
+                                                          .artifactoryName("ArtifactoryName")
+                                                          .repositoryPath("RepositoryPath")
+                                                          .version("Version")
+                                                          .connectorRef("ConnectorRef")
+                                                          .build();
+
+    RemoteTerraformVarFileSpec remoteVarFiles =
+        generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFiles);
+    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+    // Create auth with user and password
+    char[] password = {'r', 's', 't', 'u', 'v'};
+    ArtifactoryAuthenticationDTO artifactoryAuthenticationDTO =
+        ArtifactoryAuthenticationDTO.builder()
+            .authType(ArtifactoryAuthType.USER_PASSWORD)
+            .credentials(ArtifactoryUsernamePasswordAuthDTO.builder()
+                             .username("username")
+                             .passwordRef(SecretRefData.builder().decryptedValue(password).build())
+                             .build())
+            .build();
+    ArtifactoryConnectorDTO artifactoryConnectorDTO = ArtifactoryConnectorDTO.builder()
+                                                          .artifactoryServerUrl("http://artifactory.com")
+                                                          .auth(artifactoryAuthenticationDTO)
+                                                          .delegateSelectors(Collections.singleton("delegateSelector"))
+                                                          .build();
+    ConnectorInfoDTO connectorInfoDTO = ConnectorInfoDTO.builder()
+                                            .connectorType(ConnectorType.ARTIFACTORY)
+                                            .identifier("connectorRef")
+                                            .name("connectorName")
+                                            .connectorConfig(artifactoryConnectorDTO)
+                                            .build();
+    doReturn(connectorInfoDTO).when(mockK8sStepHelper).getConnector(anyString(), any());
+    List<TerraformVarFileInfo> terraformVarFileInfos = helper.toTerraformVarFileInfo(varFilesMap, ambiance);
+    assertThat(terraformVarFileInfos).isNotNull();
+    assertThat(terraformVarFileInfos.size()).isEqualTo(2);
+    for (TerraformVarFileInfo terraformVarFileInfo : terraformVarFileInfos) {
+      if (terraformVarFileInfo instanceof InlineTerraformVarFileInfo) {
+        InlineTerraformVarFileInfo inlineTerraformVarFileInfo = (InlineTerraformVarFileInfo) terraformVarFileInfo;
+        assertThat(inlineTerraformVarFileInfo.getVarFileContent()).isEqualTo("var-content");
+      } else if (terraformVarFileInfo instanceof RemoteTerraformVarFileInfo) {
+        RemoteTerraformVarFileInfo remoteTerraformVarFileInfo = (RemoteTerraformVarFileInfo) terraformVarFileInfo;
+        assertThat(remoteTerraformVarFileInfo.getFilestoreFetchFilesConfig().getIdentifier())
+            .isEqualTo("TF_VAR_FILES_1");
+        ArtifactoryStoreDelegateConfig artifactoryStoreDelegateConfig =
+            (ArtifactoryStoreDelegateConfig) remoteTerraformVarFileInfo.getFilestoreFetchFilesConfig();
+        assertThat(artifactoryStoreDelegateConfig.getArtifactName()).isEqualTo("ArtifactoryName");
+        assertThat(artifactoryStoreDelegateConfig.getVersion()).isEqualTo("Version");
+        assertThat(artifactoryStoreDelegateConfig.getRepositoryPath()).isEqualTo("RepositoryPath");
+        assertThat(artifactoryStoreDelegateConfig.getConnectorDTO().getName()).isEqualTo("connectorName");
       }
     }
   }
