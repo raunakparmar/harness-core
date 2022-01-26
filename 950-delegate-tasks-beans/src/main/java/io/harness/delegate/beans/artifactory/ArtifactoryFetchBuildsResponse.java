@@ -16,7 +16,6 @@ import io.harness.logging.CommandExecutionStatus;
 import software.wings.helpers.ext.jenkins.BuildDetails;
 
 import java.util.List;
-import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 

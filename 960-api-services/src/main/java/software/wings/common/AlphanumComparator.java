@@ -9,9 +9,7 @@ package software.wings.common;
 
 import static io.harness.annotations.dev.HarnessTeam.CDC;
 
-import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.annotations.dev.TargetModule;
 import io.harness.artifact.ComparatorUtils;
 
 import java.io.Serializable;

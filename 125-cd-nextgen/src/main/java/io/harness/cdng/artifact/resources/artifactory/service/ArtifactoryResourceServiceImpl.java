@@ -68,7 +68,7 @@ public class ArtifactoryResourceServiceImpl implements ArtifactoryResourceServic
     Optional<ConnectorResponseDTO> connectorDTO = connectorService.get(connectorRef.getAccountIdentifier(),
         connectorRef.getOrgIdentifier(), connectorRef.getProjectIdentifier(), connectorRef.getIdentifier());
     if (!connectorDTO.isPresent()
-        || !(ConnectorType.ARTIFACTORY == (connectorDTO.get().getConnector().getConnectorType()))) {
+        || ConnectorType.ARTIFACTORY != (connectorDTO.get().getConnector().getConnectorType())) {
       throw new InvalidRequestException(String.format("Connector not found for identifier : [%s] with scope: [%s]",
                                             connectorRef.getIdentifier(), connectorRef.getScope()),
           WingsException.USER);
@@ -96,7 +96,7 @@ public class ArtifactoryResourceServiceImpl implements ArtifactoryResourceServic
     Optional<ConnectorResponseDTO> connectorDTO = connectorService.get(connectorRef.getAccountIdentifier(),
         connectorRef.getOrgIdentifier(), connectorRef.getProjectIdentifier(), connectorRef.getIdentifier());
     if (!connectorDTO.isPresent()
-        || !(ConnectorType.ARTIFACTORY == (connectorDTO.get().getConnector().getConnectorType()))) {
+        || ConnectorType.ARTIFACTORY != connectorDTO.get().getConnector().getConnectorType()) {
       throw new InvalidRequestException(String.format("Connector not found for identifier : [%s] with scope: [%s]",
                                             connectorRef.getIdentifier(), connectorRef.getScope()),
           WingsException.USER);

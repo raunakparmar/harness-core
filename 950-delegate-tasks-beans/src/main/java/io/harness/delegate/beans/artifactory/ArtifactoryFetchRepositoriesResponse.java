@@ -11,7 +11,6 @@ import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateMetaInfo;
 import io.harness.delegate.beans.DelegateTaskNotifyResponseData;
-import io.harness.delegate.beans.connector.awsconnector.AwsDelegateTaskResponse;
 import io.harness.logging.CommandExecutionStatus;
 
 import java.util.Map;

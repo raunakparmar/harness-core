@@ -13,7 +13,6 @@ import static software.wings.helpers.ext.jenkins.BuildDetails.Builder.aBuildDeta
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.ContentType.JSON;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.ContentType.TEXT;
