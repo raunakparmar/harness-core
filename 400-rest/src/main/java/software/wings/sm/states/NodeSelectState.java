@@ -269,6 +269,7 @@ public abstract class NodeSelectState extends State {
         .map(context::renderExpression)
         .map(s -> Arrays.asList(s.split(",")))
         .flatMap(resolvedHosts -> resolvedHosts.stream().map(String::trim))
+        .distinct()
         .collect(toList());
   }
 
