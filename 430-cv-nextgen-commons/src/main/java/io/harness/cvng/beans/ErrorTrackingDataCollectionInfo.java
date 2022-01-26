@@ -28,7 +28,7 @@ public class ErrorTrackingDataCollectionInfo extends LogDataCollectionInfo<Error
   public Map<String, Object> getDslEnvVariables(ErrorTrackingConnectorDTO overOpsConnectorDTO) {
     Map<String, Object> map = new HashMap<>();
     map.put("sid", overOpsConnectorDTO.getSid());
-    map.put("versionId", versionId == null ? "5.0.0" : versionId);
+    map.put("versionId", versionId == null ? "" : versionId);
     map.put("serviceId", serviceId);
     map.put("environmentId", environmentId);
     return map;
