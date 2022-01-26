@@ -555,8 +555,10 @@ public class TerraformStepHelper {
             if (storeConfigWrapper != null) {
               i++;
               StoreConfig storeConfig = storeConfigWrapper.getSpec();
+              // Retrieve the files from the GIT stores
               GitFetchFilesConfig gitFetchFilesConfig =
                   getGitFetchFilesConfig(storeConfig, ambiance, format(TerraformStepHelper.TF_VAR_FILES, i));
+              // And retrive the files from the Files stores
               FileStoreFetchFilesConfig fileFetchFilesConfig =
                   getFileFactoryFetchFilesConfig(storeConfig, ambiance, format(TerraformStepHelper.TF_VAR_FILES, i));
               varFileInfo.add(RemoteTerraformVarFileInfo.builder()
