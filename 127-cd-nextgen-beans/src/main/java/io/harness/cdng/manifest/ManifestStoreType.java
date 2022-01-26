@@ -30,6 +30,7 @@ public interface ManifestStoreType {
       case GIT:
       case BITBUCKET:
       case GITLAB:
+      case GITHUB:
         return true;
 
       default:
