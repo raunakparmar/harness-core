@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toList;
 import static org.jfrog.artifactory.client.model.impl.PackageTypeImpl.docker;
 
 import software.wings.helpers.ext.jenkins.BuildDetails;
+import software.wings.utils.RepositoryType;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -19,9 +20,9 @@ public class ArtifactoryNgServiceImpl implements ArtifactoryNgService {
   @Inject ArtifactoryServiceHelper artifactoryServiceHelper;
 
   @Override
-  public List<BuildDetails> getFilePaths(
+  public List<BuildDetails> getBuildDetails(
       ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, int maxVersions) {
-    return artifactoryServiceHelper.getFilePaths(artifactoryConfig, repositoryName, artifactPath, maxVersions);
+    return artifactoryServiceHelper.getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions);
   }
 
   @Override

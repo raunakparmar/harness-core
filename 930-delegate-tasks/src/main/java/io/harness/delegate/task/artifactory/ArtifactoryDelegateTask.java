@@ -82,7 +82,7 @@ public class ArtifactoryDelegateTask extends AbstractDelegateRunnableTask {
     ArtifactoryConfigRequest artifactoryConfigRequest =
         artifactoryRequestMapper.toArtifactoryRequest(params.getArtifactoryConnectorDTO());
 
-    List<BuildDetails> buildDetails = artifactoryNgService.getFilePaths(
+    List<BuildDetails> buildDetails = artifactoryNgService.getBuildDetails(
         artifactoryConfigRequest, params.getRepoName(), params.getFilePath(), params.getMaxVersions());
 
     return ArtifactoryFetchBuildsResponse.builder().commandExecutionStatus(SUCCESS).buildDetails(buildDetails).build();

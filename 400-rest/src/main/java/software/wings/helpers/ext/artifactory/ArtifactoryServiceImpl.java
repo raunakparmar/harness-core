@@ -13,6 +13,7 @@ import static io.harness.artifactory.ArtifactoryClientImpl.getBaseUrl;
 import static io.harness.artifactory.ArtifactoryClientImpl.handleAndRethrow;
 import static io.harness.artifactory.ArtifactoryClientImpl.handleErrorResponse;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.eraro.ErrorCode.ARTIFACT_SERVER_ERROR;
 import static io.harness.eraro.ErrorCode.INVALID_ARTIFACT_SERVER;
 import static io.harness.exception.WingsException.USER;
 
@@ -20,6 +21,7 @@ import static software.wings.helpers.ext.jenkins.BuildDetails.Builder.aBuildDeta
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.ContentType.JSON;
 import static org.jfrog.artifactory.client.ArtifactoryRequest.ContentType.TEXT;
@@ -214,7 +216,7 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
   @Override
   public List<BuildDetails> getFilePaths(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
       String artifactPath, String repositoryType, int maxVersions) {
-    return artifactoryServiceHelper.getFilePaths(artifactoryConfig, repositoryName, artifactPath, maxVersions);
+    return artifactoryServiceHelper.getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions);
   }
 
   @Override
@@ -258,8 +260,18 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
   @Override
   public boolean validateArtifactPath(
       ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, String repositoryType) {
-    return artifactoryServiceHelper.validateArtifactPath(
-        artifactoryConfig, repositoryName, artifactPath, repositoryType);
+    log.info("Validating artifact path {} for repository {} and repositoryType {}", artifactPath, repositoryName,
+        repositoryType);
+    if (isBlank(artifactPath)) {
+      throw new ArtifactoryServerException("Artifact Pattern can not be empty", ARTIFACT_SERVER_ERROR, USER);
+    }
+    List<BuildDetails> filePaths = getFilePaths(artifactoryConfig, repositoryName, artifactPath, repositoryType, 1);
+
+    if (isEmpty(filePaths)) {
+      prepareAndThrowException("No artifact files matching with the artifact path [" + artifactPath + "]", USER, null);
+    }
+    log.info("Validating whether directory exists or not for Generic repository type by fetching file paths");
+    return true;
   }
 
   private void prepareAndThrowException(String message, EnumSet<ReportTarget> reportTargets, Exception e) {

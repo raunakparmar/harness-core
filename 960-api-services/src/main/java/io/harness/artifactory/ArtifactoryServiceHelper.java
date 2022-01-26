@@ -105,23 +105,7 @@ public class ArtifactoryServiceHelper {
     return repositories;
   }
 
-  public boolean validateArtifactPath(
-      ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, String repositoryType) {
-    log.info("Validating artifact path {} for repository {} and repositoryType {}", artifactPath, repositoryName,
-        repositoryType);
-    if (isBlank(artifactPath)) {
-      throw new ArtifactoryServerException("Artifact Pattern can not be empty", ARTIFACT_SERVER_ERROR, USER);
-    }
-    List<BuildDetails> filePaths = getFilePaths(artifactoryConfig, repositoryName, artifactPath, 1);
-
-    if (isEmpty(filePaths)) {
-      prepareAndThrowException("No artifact files matching with the artifact path [" + artifactPath + "]", USER, null);
-    }
-    log.info("Validating whether directory exists or not for Generic repository type by fetching file paths");
-    return true;
-  }
-
-  public List<BuildDetails> getFilePaths(
+  public List<BuildDetails> getBuildDetails(
       ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, int maxVersions) {
     log.info("Retrieving file paths for repositoryName {} artifactPath {}", repositoryName, artifactPath);
     List<String> artifactPaths = new ArrayList<>();
@@ -163,7 +147,8 @@ public class ArtifactoryServiceHelper {
           log.warn(
               "User not authorized to perform or using OSS version deep level search. Trying with different search api. Message {}",
               artifactoryResponse.getStatusLine().getReasonPhrase());
-          return getBuildDetails(artifactoryConfig, artifactory, repositoryName, artifactPath, maxVersions);
+          return getBuildDetailsForAnonymousUser(
+              artifactoryConfig, artifactory, repositoryName, artifactPath, maxVersions);
         }
         Map<String, List> response = artifactoryResponse.parseBody(Map.class);
         if (response != null) {
@@ -211,6 +196,36 @@ public class ArtifactoryServiceHelper {
     return new ArrayList<>();
   }
 
+  public InputStream downloadArtifacts(ArtifactoryConfigRequest artifactoryConfig, String repoKey,
+      Map<String, String> metadata, String artifactPathMetadataKey, String artifactFileNameMetadataKey) {
+    Artifactory artifactory = getArtifactoryClient(artifactoryConfig);
+    Set<String> artifactNames = new HashSet<>();
+    String artifactPath = metadata.get(artifactPathMetadataKey).replaceFirst(repoKey, "").substring(1);
+    String artifactName = metadata.get(artifactFileNameMetadataKey);
+
+    try {
+      log.info("Artifact name {}", artifactName);
+      if (artifactNames.add(artifactName)) {
+        if (metadata.get(artifactPathMetadataKey) != null) {
+          log.info(DOWNLOAD_FILE_FOR_GENERIC_REPO);
+          log.info("Downloading file {} ", artifactPath);
+          InputStream inputStream = artifactory.repository(repoKey).download(artifactPath).doDownload();
+          log.info("Downloading file {} success", artifactPath);
+          return inputStream;
+        }
+      }
+    } catch (Exception e) {
+      log.error("Failed to download the artifact of repository {} from path {}", repoKey, artifactPath, e);
+      String msg =
+          "Failed to download the latest artifacts  of repository [" + repoKey + "] file path [" + artifactPath;
+      throw new ArtifactoryServerException(
+          msg + REASON + ExceptionUtils.getRootCauseMessage(e), ARTIFACT_SERVER_ERROR, USER);
+    }
+    log.info(
+        "Downloading artifacts from artifactory for repository  {} and file path {} success", repoKey, artifactPath);
+    return null;
+  }
+
   private String getPath(List<String> pathElems) {
     StringBuilder groupIdBuilder = new StringBuilder();
     for (int i = 0; i < pathElems.size(); i++) {
@@ -232,8 +247,8 @@ public class ArtifactoryServiceHelper {
     return path;
   }
 
-  private List<BuildDetails> getBuildDetails(ArtifactoryConfigRequest artifactoryConfig, Artifactory artifactory,
-      String repositoryName, String artifactPath, int maxVersions) {
+  private List<BuildDetails> getBuildDetailsForAnonymousUser(ArtifactoryConfigRequest artifactoryConfig,
+      Artifactory artifactory, String repositoryName, String artifactPath, int maxVersions) {
     List<String> artifactPaths = getFilePathsForAnonymousUser(artifactory, repositoryName, artifactPath, maxVersions);
     return artifactPaths.stream()
         .map(path
@@ -319,7 +334,8 @@ public class ArtifactoryServiceHelper {
     return new ArrayList<>();
   }
 
-  private List<software.wings.helpers.ext.artifactory.FolderPath> getFolderPaths(Artifactory artifactory, String repoKey, String repoPath) {
+  private List<software.wings.helpers.ext.artifactory.FolderPath> getFolderPaths(
+      Artifactory artifactory, String repoKey, String repoPath) {
     // Add first level paths
     List<software.wings.helpers.ext.artifactory.FolderPath> folderPaths = new ArrayList<>();
     try {
@@ -353,35 +369,5 @@ public class ArtifactoryServiceHelper {
   private void prepareAndThrowException(
       String message, EnumSet<WingsException.ReportTarget> reportTargets, Exception e) {
     throw new ArtifactoryServerException(message, ErrorCode.INVALID_ARTIFACT_SERVER, reportTargets, e);
-  }
-
-  public InputStream downloadArtifacts(ArtifactoryConfigRequest artifactoryConfig, String repoKey,
-      Map<String, String> metadata, String artifactPathMetadataKey, String artifactFileNameMetadataKey) {
-    Artifactory artifactory = getArtifactoryClient(artifactoryConfig);
-    Set<String> artifactNames = new HashSet<>();
-    String artifactPath = metadata.get(artifactPathMetadataKey).replaceFirst(repoKey, "").substring(1);
-    String artifactName = metadata.get(artifactFileNameMetadataKey);
-
-    try {
-      log.info("Artifact name {}", artifactName);
-      if (artifactNames.add(artifactName)) {
-        if (metadata.get(artifactPathMetadataKey) != null) {
-          log.info(DOWNLOAD_FILE_FOR_GENERIC_REPO);
-          log.info("Downloading file {} ", artifactPath);
-          InputStream inputStream = artifactory.repository(repoKey).download(artifactPath).doDownload();
-          log.info("Downloading file {} success", artifactPath);
-          return inputStream;
-        }
-      }
-    } catch (Exception e) {
-      log.error("Failed to download the artifact of repository {} from path {}", repoKey, artifactPath, e);
-      String msg =
-          "Failed to download the latest artifacts  of repository [" + repoKey + "] file path [" + artifactPath;
-      throw new ArtifactoryServerException(
-          msg + REASON + ExceptionUtils.getRootCauseMessage(e), ARTIFACT_SERVER_ERROR, USER);
-    }
-    log.info(
-        "Downloading artifacts from artifactory for repository  {} and file path {} success", repoKey, artifactPath);
-    return null;
   }
 }

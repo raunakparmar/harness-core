@@ -90,6 +90,7 @@ public class ArtifactoryResourceServiceImpl implements ArtifactoryResourceServic
     return getArtifactoryFetchRepositoriesResponse(delegateResponseData).getRepositories();
   }
 
+  @Override
   public List<BuildDetails> getBuildDetails(String repositoryName, String filePath, int maxVersions,
       IdentifierRef connectorRef, String orgIdentifier, String projectIdentifier) {
     Optional<ConnectorResponseDTO> connectorDTO = connectorService.get(connectorRef.getAccountIdentifier(),
