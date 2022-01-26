@@ -97,7 +97,7 @@ public class ClusterResourceImplTest {
 
     when(call.execute())
         .thenReturn(Response.success(PageResponse.<Cluster>builder().content(clusters.subList(0, 30)).build()));
-    doReturn(call).when(gitopsResourceClient).listClusters(any(), any(), any(), anyInt(), anyInt());
+    doReturn(call).when(gitopsResourceClient).listClusters(any(), any(), any(), anyInt(), anyInt(), any());
 
     final List<Boolean> validate =
         clusterResource.validate(resourceIds, Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER));

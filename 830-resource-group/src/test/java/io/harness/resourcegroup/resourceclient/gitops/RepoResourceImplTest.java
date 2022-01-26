@@ -58,8 +58,7 @@ public class RepoResourceImplTest extends CategoryTest {
   @Owner(developers = YOGESH)
   @Category(UnitTests.class)
   public void getValidScopeLevels() {
-    assertThat(repositoryResource.getValidScopeLevels())
-        .containsExactlyInAnyOrder(ScopeLevel.PROJECT);
+    assertThat(repositoryResource.getValidScopeLevels()).containsExactlyInAnyOrder(ScopeLevel.PROJECT);
   }
 
   @Test
@@ -99,7 +98,7 @@ public class RepoResourceImplTest extends CategoryTest {
 
     when(call.execute())
         .thenReturn(Response.success(PageResponse.<Repository>builder().content(repositories.subList(0, 30)).build()));
-    doReturn(call).when(gitopsResourceClient).listRepositories(any(), any(), any(), anyInt(), anyInt());
+    doReturn(call).when(gitopsResourceClient).listRepositories(any(), any(), any(), anyInt(), anyInt(), any());
 
     final List<Boolean> validate =
         repositoryResource.validate(resourceIds, Scope.of(ACCOUNT_IDENTIFIER, ORG_IDENTIFIER, PROJECT_IDENTIFIER));
