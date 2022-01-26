@@ -121,7 +121,7 @@ public class AzureVMSSStateHelper {
   public static final String VIRTUAL_MACHINE_SCALE_SET_ID_PATTERN =
       "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachineScaleSets/%s";
   protected static final List<String> METADATA_ONLY_ARTIFACT_STREAM_TYPES =
-      Arrays.asList("JENKINS", "BAMBOO", "ARTIFACTORY", "NEXUS", "S3");
+      Arrays.asList("JENKINS", "BAMBOO", "ARTIFACTORY", "NEXUS", "AMAZON_S3", "AZURE_ARTIFACTS");
 
   @Inject private ServiceResourceService serviceResourceService;
   @Inject private ActivityService activityService;
