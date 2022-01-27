@@ -22,7 +22,6 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.artifactory.ArtifactoryClientImpl;
 import io.harness.artifactory.ArtifactoryConfigRequest;
-import io.harness.artifactory.ArtifactoryServiceHelper;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.task.ListNotifyResponseData;
 import io.harness.exception.ArtifactoryServerException;
@@ -86,7 +85,7 @@ public class ArtifactoryServiceTest extends CategoryTest {
                             .password("dummy123!".toCharArray())
                             .build();
     artifactoryConfigAnonymous = ArtifactoryConfigRequest.builder().artifactoryUrl(url).build();
-    on(artifactoryService).set("artifactoryServiceHelper", new ArtifactoryServiceHelper());
+    on(artifactoryService).set("artifactoryClient", new ArtifactoryClientImpl());
   }
 
   @Test

@@ -34,8 +34,8 @@ import io.harness.annotations.dev.HarnessModule;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.annotations.dev.TargetModule;
 import io.harness.artifact.ArtifactUtilities;
+import io.harness.artifactory.ArtifactoryClientImpl;
 import io.harness.artifactory.ArtifactoryConfigRequest;
-import io.harness.artifactory.ArtifactoryServiceHelper;
 import io.harness.delegate.task.ListNotifyResponseData;
 import io.harness.eraro.ErrorCode;
 import io.harness.exception.ArtifactoryServerException;
@@ -86,20 +86,20 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
   private static final String DOWNLOAD_FILE_FOR_GENERIC_REPO = "Downloading the file for generic repo";
 
   @Inject private ArtifactCollectionTaskHelper artifactCollectionTaskHelper;
-  @Inject private ArtifactoryServiceHelper artifactoryServiceHelper;
+  @Inject private ArtifactoryClientImpl artifactoryClient;
 
   @Override
   public Map<String, String> getRepositories(ArtifactoryConfigRequest artifactoryConfig) {
-    return artifactoryServiceHelper.getRepositories(artifactoryConfig, Collections.singletonList(docker));
+    return artifactoryClient.getRepositories(artifactoryConfig, Collections.singletonList(docker));
   }
 
   @Override
   public Map<String, String> getRepositories(ArtifactoryConfigRequest artifactoryConfig, String packageType) {
     switch (packageType) {
       case "maven":
-        return artifactoryServiceHelper.getRepositories(artifactoryConfig, Collections.singletonList(maven));
+        return artifactoryClient.getRepositories(artifactoryConfig, Collections.singletonList(maven));
       default:
-        return artifactoryServiceHelper.getRepositories(artifactoryConfig,
+        return artifactoryClient.getRepositories(artifactoryConfig,
             Arrays.stream(PackageTypeImpl.values()).filter(type -> docker != type).collect(toList()));
     }
   }
@@ -111,9 +111,9 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
       case docker:
         return getRepositories(artifactoryConfig);
       case maven:
-        return artifactoryServiceHelper.getRepositories(artifactoryConfig, Arrays.asList(maven));
+        return artifactoryClient.getRepositories(artifactoryConfig, Arrays.asList(maven));
       case any:
-        return artifactoryServiceHelper.getRepositories(artifactoryConfig,
+        return artifactoryClient.getRepositories(artifactoryConfig,
             Arrays.stream(PackageTypeImpl.values()).filter(type -> docker != type).collect(toList()));
       default:
         return getRepositories(artifactoryConfig, "");
@@ -216,7 +216,7 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
   @Override
   public List<BuildDetails> getFilePaths(ArtifactoryConfigRequest artifactoryConfig, String repositoryName,
       String artifactPath, String repositoryType, int maxVersions) {
-    return artifactoryServiceHelper.getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions);
+    return artifactoryClient.getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions);
   }
 
   @Override
@@ -280,7 +280,7 @@ public class ArtifactoryServiceImpl implements ArtifactoryService {
 
   private InputStream downloadArtifacts(
       ArtifactoryConfigRequest artifactoryConfig, String repoKey, Map<String, String> metadata) {
-    return artifactoryServiceHelper.downloadArtifacts(
+    return artifactoryClient.downloadArtifacts(
         artifactoryConfig, repoKey, metadata, ArtifactMetadataKeys.artifactPath, ArtifactMetadataKeys.artifactFileName);
   }
 

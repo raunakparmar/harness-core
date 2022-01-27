@@ -11,6 +11,9 @@ import static software.wings.beans.TaskType.NG_ARTIFACTORY_TASK;
 
 import io.harness.beans.DelegateTaskRequest;
 import io.harness.beans.IdentifierRef;
+import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryArtifactBuildDetailsDTO;
+import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryRepoDetailsDTO;
+import io.harness.cdng.artifact.resources.artifactory.mappers.ArtifactoryResourceMapper;
 import io.harness.cdng.common.beans.SetupAbstractionKeys;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
@@ -32,15 +35,12 @@ import io.harness.secretmanagerclient.services.api.SecretManagerClientService;
 import io.harness.security.encryption.EncryptedDataDetail;
 import io.harness.service.DelegateGrpcClientWrapper;
 
-import software.wings.helpers.ext.jenkins.BuildDetails;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 
@@ -63,7 +63,7 @@ public class ArtifactoryResourceServiceImpl implements ArtifactoryResourceServic
   }
 
   @Override
-  public Map<String, String> getRepositories(
+  public ArtifactoryRepoDetailsDTO getRepositories(
       String repositoryType, IdentifierRef connectorRef, String orgIdentifier, String projectIdentifier) {
     Optional<ConnectorResponseDTO> connectorDTO = connectorService.get(connectorRef.getAccountIdentifier(),
         connectorRef.getOrgIdentifier(), connectorRef.getProjectIdentifier(), connectorRef.getIdentifier());
@@ -87,12 +87,14 @@ public class ArtifactoryResourceServiceImpl implements ArtifactoryResourceServic
             .build(),
         NG_ARTIFACTORY_TASK.name());
 
-    return getArtifactoryFetchRepositoriesResponse(delegateResponseData).getRepositories();
+    return ArtifactoryRepoDetailsDTO.builder()
+        .repositories(getArtifactoryFetchRepositoriesResponse(delegateResponseData).getRepositories())
+        .build();
   }
 
   @Override
-  public List<BuildDetails> getBuildDetails(String repositoryName, String filePath, int maxVersions,
-      IdentifierRef connectorRef, String orgIdentifier, String projectIdentifier) {
+  public List<ArtifactoryArtifactBuildDetailsDTO> getBuildDetails(String repositoryName, String filePath,
+      int maxVersions, IdentifierRef connectorRef, String orgIdentifier, String projectIdentifier) {
     Optional<ConnectorResponseDTO> connectorDTO = connectorService.get(connectorRef.getAccountIdentifier(),
         connectorRef.getOrgIdentifier(), connectorRef.getProjectIdentifier(), connectorRef.getIdentifier());
     if (!connectorDTO.isPresent()
@@ -118,7 +120,8 @@ public class ArtifactoryResourceServiceImpl implements ArtifactoryResourceServic
     DelegateResponseData delegateResponseData =
         getResponseData(baseNGAccess, artifactoryTaskParams, NG_ARTIFACTORY_TASK.name());
 
-    return getArtifactoryFetchBuildsResponse(delegateResponseData).getBuildDetails();
+    return ArtifactoryResourceMapper.toArtifactoryArtifactBuildDetailsDTO(
+        getArtifactoryFetchBuildsResponse(delegateResponseData).getBuildDetails());
   }
 
   private DelegateResponseData getResponseData(BaseNGAccess ngAccess, TaskParameters taskParameters, String taskType) {

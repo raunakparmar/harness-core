@@ -16,17 +16,17 @@ import org.jfrog.artifactory.client.model.impl.PackageTypeImpl;
 @Singleton
 @Slf4j
 public class ArtifactoryNgServiceImpl implements ArtifactoryNgService {
-  @Inject ArtifactoryServiceHelper artifactoryServiceHelper;
+  @Inject ArtifactoryClientImpl artifactoryClient;
 
   @Override
   public List<BuildDetails> getBuildDetails(
       ArtifactoryConfigRequest artifactoryConfig, String repositoryName, String artifactPath, int maxVersions) {
-    return artifactoryServiceHelper.getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions);
+    return artifactoryClient.getBuildDetails(artifactoryConfig, repositoryName, artifactPath, maxVersions);
   }
 
   @Override
   public Map<String, String> getRepositories(ArtifactoryConfigRequest artifactoryConfig, String packageType) {
-    return artifactoryServiceHelper.getRepositories(
+    return artifactoryClient.getRepositories(
         artifactoryConfig, Arrays.stream(PackageTypeImpl.values()).filter(type -> docker != type).collect(toList()));
   }
 }

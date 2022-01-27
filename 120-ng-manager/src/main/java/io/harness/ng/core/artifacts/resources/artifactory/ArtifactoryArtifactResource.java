@@ -11,13 +11,13 @@ import io.harness.NGCommonEntityConstants;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
+import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryArtifactBuildDetailsDTO;
+import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryRepoDetailsDTO;
 import io.harness.cdng.artifact.resources.artifactory.service.ArtifactoryResourceService;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
 import io.harness.utils.IdentifierRefHelper;
-
-import software.wings.helpers.ext.jenkins.BuildDetails;
 
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
@@ -25,9 +25,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -54,23 +54,23 @@ public class ArtifactoryArtifactResource {
   @GET
   @Path("getRepositoriesDetails")
   @ApiOperation(value = "Gets repository details", nickname = "getRepositoriesDetailsForArtifactory")
-  public ResponseDTO<Map<String, String>> getRepositoriesDetails(
+  public ResponseDTO<ArtifactoryRepoDetailsDTO> getRepositoriesDetails(
       @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
-      @QueryParam("repositoryType") String repositoryType,
+      @QueryParam("repositoryType") @DefaultValue("any") String repositoryType,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     IdentifierRef connectorRef = IdentifierRefHelper.getIdentifierRef(
         artifactoryConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    Map<String, String> repositories =
+    ArtifactoryRepoDetailsDTO repoDetailsDTO =
         artifactoryResourceService.getRepositories(repositoryType, connectorRef, orgIdentifier, projectIdentifier);
-    return ResponseDTO.newResponse(repositories);
+    return ResponseDTO.newResponse(repoDetailsDTO);
   }
 
   @GET
   @Path("getBuildsDetails")
-  @ApiOperation(value = "Gets repository details", nickname = "getBuildsDetailsForArtifactory")
-  public ResponseDTO<List<BuildDetails>> getBuildsDetails(
+  @ApiOperation(value = "Gets builds details", nickname = "getBuildsDetailsForArtifactory")
+  public ResponseDTO<List<ArtifactoryArtifactBuildDetailsDTO>> getBuildsDetails(
       @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
       @QueryParam("repositoryName") String repositoryName, @QueryParam("filePath") String filePath,
       @QueryParam("maxVersions") int maxVersions,
@@ -79,7 +79,7 @@ public class ArtifactoryArtifactResource {
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
     IdentifierRef connectorRef = IdentifierRefHelper.getIdentifierRef(
         artifactoryConnectorIdentifier, accountId, orgIdentifier, projectIdentifier);
-    List<BuildDetails> buildDetails = artifactoryResourceService.getBuildDetails(
+    List<ArtifactoryArtifactBuildDetailsDTO> buildDetails = artifactoryResourceService.getBuildDetails(
         repositoryName, filePath, maxVersions, connectorRef, orgIdentifier, projectIdentifier);
     return ResponseDTO.newResponse(buildDetails);
   }

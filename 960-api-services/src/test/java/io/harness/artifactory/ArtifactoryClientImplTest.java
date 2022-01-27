@@ -39,10 +39,10 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 @OwnedBy(CDP)
-public class ArtifactoryServiceHelperTest extends CategoryTest {
+public class ArtifactoryClientImplTest extends CategoryTest {
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-  @InjectMocks ArtifactoryServiceHelper artifactoryServiceHelper;
+  @InjectMocks ArtifactoryClientImpl artifactoryClient;
 
   /**
    * The Wire mock rule.
@@ -79,7 +79,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
   public void testGetRepositories() {
-    Map<String, String> repositories = artifactoryServiceHelper.getRepositories(
+    Map<String, String> repositories = artifactoryClient.getRepositories(
         artifactoryConfig, Arrays.stream(PackageTypeImpl.values()).filter(type -> docker != type).collect(toList()));
     assertThat(repositories.size()).isEqualTo(4);
     assertThat(repositories.get("harness-maven")).isEqualTo("harness-maven");
@@ -92,8 +92,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
   public void shouldGetRpmFilePaths() {
-    List<BuildDetails> builds =
-        artifactoryServiceHelper.getBuildDetails(artifactoryConfig, "harness-rpm", "todolist*/", 50);
+    List<BuildDetails> builds = artifactoryClient.getBuildDetails(artifactoryConfig, "harness-rpm", "todolist*/", 50);
     assertThat(builds).isNotNull();
     assertThat(builds).extracting(BuildDetails::getNumber).contains("todolist-1.0-2.x86_64.rpm");
   }
@@ -102,7 +101,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
   public void shouldGetCorrectBuildNoWithAnyWildcardMatch() {
-    List<BuildDetails> builds = artifactoryServiceHelper.getBuildDetails(
+    List<BuildDetails> builds = artifactoryClient.getBuildDetails(
         artifactoryConfig, "harness-maven", "io/harness/todolist/todolist/*/*.war", 50);
     assertThat(builds).isNotNull();
     assertThat(builds)
@@ -114,7 +113,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
   public void shouldGetCorrectBuildNoForAtLeastOneWildcardPattern() {
-    List<BuildDetails> builds = artifactoryServiceHelper.getBuildDetails(
+    List<BuildDetails> builds = artifactoryClient.getBuildDetails(
         artifactoryConfig, "harness-maven", "io/harness/todolist/todolist/[0-9]+/*.war", 50);
     assertThat(builds).isNotNull();
     assertThat(builds)
@@ -126,7 +125,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
   public void shouldGetCorrectBuildNoForArtifactPathsWithoutAnyWildcardCharacter() {
-    List<BuildDetails> builds = artifactoryServiceHelper.getBuildDetails(
+    List<BuildDetails> builds = artifactoryClient.getBuildDetails(
         artifactoryConfig, "harness-maven", "/io/harness/todolist/todolist/1.0/todolist-1.0.war", 50);
     assertThat(builds).isNotNull();
     assertThat(builds)
@@ -138,7 +137,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   @Owner(developers = TMACARI)
   @Category(UnitTests.class)
   public void shouldGetCorrectBuildNoForArtifactPathsWithoutAnyWildcardCharacter1() {
-    List<BuildDetails> builds = artifactoryServiceHelper.getBuildDetails(
+    List<BuildDetails> builds = artifactoryClient.getBuildDetails(
         artifactoryConfig, "harness-maven", "io/harness/todolist/todolist/1.0/*.war", 50);
     assertThat(builds).isNotNull();
     assertThat(builds).extracting(BuildDetails::getNumber).contains("todolist-1.0.war");
@@ -150,7 +149,7 @@ public class ArtifactoryServiceHelperTest extends CategoryTest {
   public void shouldDownloadArtifact() {
     Map<String, String> metadata = ImmutableMap.of(
         "artifactPath", "harness-rpm/todolist-1.0-2.x86_64.rpm", "artifactFileName", "todolist-1.0-2.x86_64.rpm");
-    InputStream artifactInputStream = artifactoryServiceHelper.downloadArtifacts(
+    InputStream artifactInputStream = artifactoryClient.downloadArtifacts(
         artifactoryConfig, "harness-rpm", metadata, "artifactPath", "artifactFileName");
     assertThat(artifactInputStream).isNotNull();
   }

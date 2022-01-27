@@ -38,7 +38,7 @@ import org.mockito.MockitoAnnotations;
 
 @OwnedBy(CDP)
 public class ArtifactoryNgServiceImplTest extends CategoryTest {
-  @Mock ArtifactoryServiceHelper artifactoryServiceHelper;
+  @Mock ArtifactoryClientImpl artifactoryClient;
 
   @InjectMocks ArtifactoryNgServiceImpl artifactoryNgService;
 
@@ -53,11 +53,11 @@ public class ArtifactoryNgServiceImplTest extends CategoryTest {
   public void testGetRepositories() {
     Map<String, String> repositories = Collections.singletonMap("repo", "repo");
     ArtifactoryConfigRequest artifactoryConfigRequest = ArtifactoryConfigRequest.builder().build();
-    doReturn(repositories).when(artifactoryServiceHelper).getRepositories(any(), any());
+    doReturn(repositories).when(artifactoryClient).getRepositories(any(), any());
 
     Map<String, String> result = artifactoryNgService.getRepositories(artifactoryConfigRequest, "packageType");
 
-    verify(artifactoryServiceHelper, times(1)).getRepositories(any(), any());
+    verify(artifactoryClient, times(1)).getRepositories(any(), any());
     assertThat(result).isEqualTo(repositories);
   }
 
@@ -67,12 +67,12 @@ public class ArtifactoryNgServiceImplTest extends CategoryTest {
   public void testBetBuildDetails() {
     List<BuildDetails> buildDetails = Collections.singletonList(aBuildDetails().build());
     ArtifactoryConfigRequest artifactoryConfigRequest = ArtifactoryConfigRequest.builder().build();
-    doReturn(buildDetails).when(artifactoryServiceHelper).getBuildDetails(any(), any(), any(), anyInt());
+    doReturn(buildDetails).when(artifactoryClient).getBuildDetails(any(), any(), any(), anyInt());
 
     List<BuildDetails> result =
         artifactoryNgService.getBuildDetails(artifactoryConfigRequest, "repoName", "artifactPath", 10);
 
-    verify(artifactoryServiceHelper, times(1)).getBuildDetails(any(), any(), any(), anyInt());
+    verify(artifactoryClient, times(1)).getBuildDetails(any(), any(), any(), anyInt());
     assertThat(result).isEqualTo(buildDetails);
   }
 }
