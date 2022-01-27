@@ -15,20 +15,13 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.EmbeddedUser;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.delegate.beans.DelegateEntityOwner;
-import io.harness.delegate.beans.DelegateNgToken;
-import io.harness.delegate.beans.DelegateNgToken.DelegateNgTokenKeys;
 import io.harness.delegate.beans.DelegateToken;
 import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenDetails.DelegateTokenDetailsBuilder;
 import io.harness.delegate.beans.DelegateTokenStatus;
-import io.harness.delegate.dto.DelegateNgTokenDTO;
-import io.harness.delegate.events.DelegateNgTokenCreateEvent;
-import io.harness.delegate.events.DelegateNgTokenRevokeEvent;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
-import io.harness.delegateprofile.EmbeddedUserDetails;
 import io.harness.exception.InvalidRequestException;
-import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
 import io.harness.service.intfc.DelegateNgTokenService;
@@ -58,13 +51,19 @@ import org.mongodb.morphia.query.UpdateOperations;
 @ValidateOnExecution
 @OwnedBy(HarnessTeam.DEL)
 public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, AccountCrudObserver {
-  @Inject private HPersistence persistence;
-  @Inject private OutboxService outboxService;
+  private final HPersistence persistence;
+  private final OutboxService outboxService;
+
+  @Inject
+  public DelegateNgTokenServiceImpl(HPersistence persistence, OutboxService outboxService) {
+    this.persistence = persistence;
+    this.outboxService = outboxService;
+  }
 
   @Override
   public DelegateTokenDetails createToken(String accountId, DelegateEntityOwner owner, String name) {
     if (!matchNameTokenQuery(accountId, owner, name).asList().isEmpty()) {
-      throw new InvalidRequestException("Token with given name already exists for given account, org and project.");
+      throw new InvalidRequestException("Token with given name already exists for given account.");
     }
 
     DelegateToken delegateToken = DelegateToken.builder()
@@ -105,7 +104,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                      .filter(DelegateTokenKeys.isNg, true)
                                      .filter(DelegateTokenKeys.owner, owner);
     if (status != null) {
-      query = query.filter(DelegateNgTokenKeys.status, status);
+      query = query.filter(DelegateTokenKeys.status, status);
     }
     return query.asList().stream().map(token -> getDelegateTokenDetails(token, false)).collect(Collectors.toList());
   }
@@ -128,7 +127,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                                     .map(token -> getDelegateTokenDetails(token, true))
                                                     .findFirst()
                                                     .orElse(null);
-    return delegateTokenDetails != null ? delegateTokenDetails.getValue() : null;
+    return delegateTokenDetails != null ? decodeBase64ToString(delegateTokenDetails.getValue()) : null;
   }
 
   @Override
@@ -138,7 +137,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                      .filter(DelegateTokenKeys.name, DEFAULT_TOKEN_NAME);
 
     if (owner != null) {
-      query = query.filter(DelegateNgTokenKeys.owner, owner);
+      query = query.filter(DelegateTokenKeys.owner, owner);
     }
 
     Query<DelegateToken> queryExistsActive = query.filter(DelegateTokenKeys.status, DelegateTokenStatus.ACTIVE);
@@ -152,10 +151,10 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
     UpdateOperations<DelegateToken> updateOperations =
         persistence.createUpdateOperations(DelegateToken.class)
             .setOnInsert(DelegateTokenKeys.uuid, UUIDGenerator.generateUuid())
-            .setOnInsert(DelegateNgTokenKeys.accountId, accountId)
-            .set(DelegateNgTokenKeys.name, DEFAULT_TOKEN_NAME)
-            .set(DelegateNgTokenKeys.status, DelegateTokenStatus.ACTIVE)
-            .set(DelegateNgTokenKeys.value, encodeBase64(Misc.generateSecretKey()));
+            .setOnInsert(DelegateTokenKeys.accountId, accountId)
+            .set(DelegateTokenKeys.name, DEFAULT_TOKEN_NAME)
+            .set(DelegateTokenKeys.status, DelegateTokenStatus.ACTIVE)
+            .set(DelegateTokenKeys.value, encodeBase64(Misc.generateSecretKey()));
 
     DelegateToken delegateToken = persistence.upsert(query, updateOperations, HPersistence.upsertReturnNewOptions);
     log.info("Default Delegate NG Token inserted/updated for account {}, organization {} and project {}", accountId,

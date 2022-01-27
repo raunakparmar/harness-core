@@ -1118,11 +1118,11 @@ public class DelegateSetupResourceV3 {
       })
   public RestResponse<DelegateGroupListing>
   list(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotEmpty @QueryParam(
-           "accountId") @AccountIdentifier String accountIdentifier,
+           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          "orgId") @OrgIdentifier String orgIdentifier,
+          NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          "projectId") @ProjectIdentifier String projectIdentifier,
+          NGCommonEntityConstants.PROJECT_KEY) @ProjectIdentifier String projectIdentifier,
       @Parameter(description = "Delegate Token name") @QueryParam("delegateTokenName") String delegateTokenName) {
     accessControlClient.checkForAccessOrThrow(ResourceScope.of(accountIdentifier, orgIdentifier, projectIdentifier),
         Resource.of(DELEGATE_RESOURCE_TYPE, null), DELEGATE_VIEW_PERMISSION);
