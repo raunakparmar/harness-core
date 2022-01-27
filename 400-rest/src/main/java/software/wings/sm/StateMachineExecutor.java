@@ -967,6 +967,7 @@ public class StateMachineExecutor implements StateInspectionListener {
             StateStatusUpdateInfo.buildFromStateExecutionInstance(stateExecutionInstance, false);
         WorkflowExecution workflowExecution =
             workflowExecutionService.getWorkflowExecution(context.getAppId(), context.getWorkflowExecutionId());
+        // Change this to WF_PAUSE once it is merged
         workflowExecutionUpdate.publish(workflowExecution, arg, EventType.PIPELINE_PAUSE);
         sendManualInterventionNeededNotification(context, stateExecutionInstance.getExpiryTs());
         break;
