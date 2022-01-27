@@ -3799,12 +3799,17 @@ public class DelegateServiceImpl implements DelegateService {
       throw new InvalidRequestException("Delegate Name must be provided.");
     }
     checkUniquenessOfDelegateName(accountId, delegateSetupDetails.getName(), true);
+
+    // TODO: Arpit uncomment it when ng delegate token feature is rolled out
+    //    if(delegateSetupDetails.getTokenName() == null) {
+    //      throw new InvalidRequestException("Delegate Token must be provided.", USER);
+    //    }
   }
 
   @Override
   public File downloadNgDocker(String managerHost, String verificationServiceUrl, String accountId,
       DelegateSetupDetails delegateSetupDetails) throws IOException {
-    validateDockerSetupDetailsNg(accountId, delegateSetupDetails, DOCKER);
+    validateDelegateSetupDetails(accountId, delegateSetupDetails, DOCKER);
 
     File composeYaml = File.createTempFile(HARNESS_NG_DELEGATE + "-docker-compose", YAML);
 
@@ -3949,6 +3954,7 @@ public class DelegateServiceImpl implements DelegateService {
             .delegateName(delegateName)
             .logStreamingServiceBaseUrl(mainConfiguration.getLogStreamingServiceConfig().getBaseUrl())
             .ceEnabled(false)
+            .delegateTokenName(delegateSetupDetails != null ? delegateSetupDetails.getTokenName() : null)
             .build();
 
     ImmutableMap<String, String> paramMap = getJarAndScriptRunTimeParamMap(templateParameters, useNgToken, true);

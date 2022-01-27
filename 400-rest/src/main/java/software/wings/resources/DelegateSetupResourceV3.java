@@ -995,12 +995,12 @@ public class DelegateSetupResourceV3 {
       { @io.swagger.v3.oas.annotations.responses.ApiResponse(description = "Validates docker delegate details.") })
   public RestResponse<Void>
   validateDockerSetupDetails(@Parameter(description = "Account id") @QueryParam("accountId") @NotEmpty String accountId,
-      @Parameter(description = "Delegate name") @QueryParam("delegateName") String delegateName) {
+      @Parameter(description = "Delegate name") @QueryParam("delegateName") String delegateName,
+      @Parameter(description = "Delegate token") @QueryParam("tokenName") String tokenName) {
     try (AutoLogContext ignore1 = new AccountLogContext(accountId, OVERRIDE_ERROR)) {
       DelegateSetupDetails delegateSetupDetails =
-          DelegateSetupDetails.builder().delegateType(DOCKER).name(delegateName).build();
-      delegateService.validateDockerSetupDetailsNg(accountId, delegateSetupDetails, DOCKER);
-
+          DelegateSetupDetails.builder().delegateType(DOCKER).name(delegateName).tokenName(tokenName).build();
+      delegateService.validateDelegateSetupDetails(accountId, delegateSetupDetails, DOCKER);
       return new RestResponse<>();
     }
   }
