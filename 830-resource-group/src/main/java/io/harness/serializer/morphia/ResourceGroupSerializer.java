@@ -12,9 +12,19 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.gitsync.serializer.GitSyncSdkRegistrar;
 import io.harness.morphia.MorphiaRegistrar;
-import io.harness.resourcegroup.commons.bootstrap.ConfigurationState;
-import io.harness.serializer.*;
-import io.harness.serializer.kryo.*;
+import io.harness.serializer.DelegateServiceDriverRegistrars;
+import io.harness.serializer.DelegateTaskRegistrars;
+import io.harness.serializer.KryoRegistrar;
+import io.harness.serializer.NGCoreClientRegistrars;
+import io.harness.serializer.OutboxEventRegistrars;
+import io.harness.serializer.ProjectAndOrgRegistrars;
+import io.harness.serializer.SMCoreRegistrars;
+import io.harness.serializer.WaitEngineRegistrars;
+import io.harness.serializer.kryo.DelegateServiceBeansKryoRegistrar;
+import io.harness.serializer.kryo.DelegateTasksBeansKryoRegister;
+import io.harness.serializer.kryo.DelegateTasksKryoRegistrar;
+import io.harness.serializer.kryo.NGAuditCommonsKryoRegistrar;
+import io.harness.serializer.kryo.NGCoreKryoRegistrar;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.experimental.UtilityClass;
@@ -36,10 +46,13 @@ public class ResourceGroupSerializer {
 
   public final ImmutableSet<Class<? extends MorphiaRegistrar>> morphiaRegistrars =
       ImmutableSet.<Class<? extends MorphiaRegistrar>>builder()
-          .addAll(OutboxEventRegistrars.morphiaRegistrars)   .addAll(DelegateServiceDriverRegistrars.morphiaRegistrars)
-              .addAll(NGCoreClientRegistrars.morphiaRegistrars)
-              .addAll(SMCoreRegistrars.morphiaRegistrars)
-              .addAll(DelegateTaskRegistrars.morphiaRegistrars)          .addAll(GitSyncSdkRegistrar.morphiaRegistrars).add(ResourceGroupMorphiaRegistrar.class)
-              .add(ResourceGroupBeansMorphiaRegistrar.class)
+          .addAll(OutboxEventRegistrars.morphiaRegistrars)
+          .addAll(DelegateServiceDriverRegistrars.morphiaRegistrars)
+          .addAll(NGCoreClientRegistrars.morphiaRegistrars)
+          .addAll(SMCoreRegistrars.morphiaRegistrars)
+          .addAll(DelegateTaskRegistrars.morphiaRegistrars)
+          .addAll(GitSyncSdkRegistrar.morphiaRegistrars)
+          .add(ResourceGroupMorphiaRegistrar.class)
+          .add(ResourceGroupBeansMorphiaRegistrar.class)
           .build();
 }

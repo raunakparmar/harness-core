@@ -158,7 +158,9 @@ public class ResourceGroupTestRule implements MethodRule, InjectorRuleMixin, Mon
       @Provides
       @Singleton
       Set<Class<? extends KryoRegistrar>> kryoRegistrars() {
-        return ImmutableSet.<Class<? extends KryoRegistrar>>builder().addAll(ResourceGroupSerializer.kryoRegistrars).build();
+        return ImmutableSet.<Class<? extends KryoRegistrar>>builder()
+            .addAll(ResourceGroupSerializer.kryoRegistrars)
+            .build();
       }
 
       @Provides
@@ -178,14 +180,18 @@ public class ResourceGroupTestRule implements MethodRule, InjectorRuleMixin, Mon
       @Provides
       @Singleton
       Set<Class<? extends MorphiaRegistrar>> morphiaRegistrars() {
-        return ImmutableSet.<Class<? extends MorphiaRegistrar>>builder().addAll(ResourceGroupSerializer.morphiaRegistrars).build();
+        return ImmutableSet.<Class<? extends MorphiaRegistrar>>builder()
+            .addAll(ResourceGroupSerializer.morphiaRegistrars)
+            .build();
       }
     });
     modules.add(new OASModule() {
       @Override
-      public Collection<Class<?>> getResourceClasses() {return ResourceGroupResourceClasses.getResourceClasses();}
+      public Collection<Class<?>> getResourceClasses() {
+        return ResourceGroupResourceClasses.getResourceClasses();
+      }
     });
-        return modules;
+    return modules;
   }
 
   private ResourceGroupServiceConfig getConfiguration() {

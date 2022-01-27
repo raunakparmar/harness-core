@@ -11,11 +11,16 @@ import static io.harness.annotations.dev.HarnessTeam.PL;
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.morphia.MorphiaRegistrar;
-import io.harness.serializer.kryo.*;
-import io.harness.serializer.morphia.*;
+import io.harness.serializer.kryo.DelegateServiceBeansKryoRegistrar;
+import io.harness.serializer.kryo.DelegateTasksBeansKryoRegister;
+import io.harness.serializer.kryo.DelegateTasksKryoRegistrar;
+import io.harness.serializer.kryo.NGAuditCommonsKryoRegistrar;
+import io.harness.serializer.kryo.NGCoreKryoRegistrar;
+import io.harness.serializer.kryo.NotificationSenderKryoRegistrar;
+import io.harness.serializer.morphia.NotificationClientRegistrars;
+import io.harness.serializer.morphia.NotificationSenderMorphiaRegistrar;
 
 import com.google.common.collect.ImmutableSet;
-import io.serializer.morphia.NGCommonsMorphiaRegistrar;
 import org.mongodb.morphia.converters.TypeConverter;
 
 @OwnedBy(PL)
