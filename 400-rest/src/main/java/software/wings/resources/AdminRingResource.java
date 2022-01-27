@@ -5,6 +5,8 @@ import static io.harness.annotations.dev.HarnessTeam.DEL;
 import static software.wings.security.PermissionAttribute.Action.UPDATE;
 import static software.wings.security.PermissionAttribute.PermissionType.ACCOUNT_MANAGEMENT;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.datahandler.services.AdminRingService;
 import io.harness.exception.InvalidRequestException;
@@ -44,6 +46,9 @@ public class AdminRingResource {
   @Path("/{ringName}/delegate-tag")
   public RestResponse<Boolean> updateDelegateTag(
       @PathParam("ringName") final String ringName, @Body final String delegateTag) {
+    if (isBlank(delegateTag) || isBlank(ringName)) {
+      throw new InvalidRequestException("Empty delegate tag or ring name");
+    }
     final User user = getUser();
     if (userGroupService.isHarnessSupportUser(getUser().getUuid())) {
       log.info("Updating delegate image tag to {} for ring {}", delegateTag, ringName);
@@ -59,6 +64,9 @@ public class AdminRingResource {
   @Path("/{ringName}/upgrader-tag")
   public RestResponse<Boolean> updateUpgraderTag(
       @PathParam("ringName") final String ringName, @Body final String upgraderTag) {
+    if (isBlank(upgraderTag) || isBlank(ringName)) {
+      throw new InvalidRequestException("Empty upgrader tag or ring name");
+    }
     final User user = getUser();
     if (userGroupService.isHarnessSupportUser(getUser().getUuid())) {
       log.info("Updating upgrader image tag to {} for ring {}", upgraderTag, ringName);
@@ -74,6 +82,9 @@ public class AdminRingResource {
   @Path("/{ringName}/delegate-version")
   public RestResponse<Boolean> updateDelegateVersion(
       @PathParam("ringName") final String ringName, @Body final String delegateVersion) {
+    if (isBlank(delegateVersion) || isBlank(ringName)) {
+      throw new InvalidRequestException("Empty delegate version or ring name");
+    }
     final User user = getUser();
     if (userGroupService.isHarnessSupportUser(getUser().getUuid())) {
       log.info("Updating delegate jar version to {} for ring {}", delegateVersion, ringName);
