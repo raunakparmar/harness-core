@@ -13,8 +13,6 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Map;
-
 @Value
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
