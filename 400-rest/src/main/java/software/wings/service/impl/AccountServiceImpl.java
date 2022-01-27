@@ -69,6 +69,7 @@ import io.harness.datahandler.models.AccountDetails;
 import io.harness.dataretention.AccountDataRetentionEntity;
 import io.harness.dataretention.AccountDataRetentionService;
 import io.harness.delegate.beans.DelegateConfiguration;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.utils.DelegateRingConstants;
 import io.harness.eraro.Level;
 import io.harness.event.handler.impl.EventPublishHelper;
@@ -105,7 +106,6 @@ import io.harness.persistence.HPersistence;
 import io.harness.reflection.ReflectionUtils;
 import io.harness.scheduler.PersistentScheduler;
 import io.harness.seeddata.SampleDataProviderService;
-import io.harness.service.intfc.DelegateNgTokenService;
 import io.harness.validation.SuppressValidation;
 import io.harness.version.VersionInfoManager;
 

@@ -63,6 +63,7 @@ import io.harness.data.structure.UUIDGenerator;
 import io.harness.datahandler.models.AccountDetails;
 import io.harness.delegate.beans.DelegateConfiguration;
 import io.harness.delegate.beans.DelegateTokenStatus;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.exception.InvalidArgumentsException;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.UnauthorizedException;
@@ -71,7 +72,6 @@ import io.harness.ng.core.account.AuthenticationMechanism;
 import io.harness.ng.core.account.DefaultExperience;
 import io.harness.rest.RestResponse;
 import io.harness.rule.Owner;
-import io.harness.service.intfc.DelegateNgTokenService;
 
 import software.wings.WingsBaseTest;
 import software.wings.app.MainConfiguration;

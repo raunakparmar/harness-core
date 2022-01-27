@@ -17,12 +17,12 @@ import static io.harness.eventsframework.EventsFrameworkMetadataConstants.RESTOR
 
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateEntityOwner;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.eventsframework.consumer.Message;
 import io.harness.eventsframework.entity_crud.organization.OrganizationEntityChangeDTO;
 import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.event.MessageListener;
-import io.harness.service.intfc.DelegateNgTokenService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

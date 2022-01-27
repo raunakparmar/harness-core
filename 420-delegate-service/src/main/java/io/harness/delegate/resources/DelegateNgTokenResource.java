@@ -16,11 +16,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenStatus;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.rest.RestResponse;
-import io.harness.service.intfc.DelegateNgTokenService;
 
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;

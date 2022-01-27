@@ -35,6 +35,7 @@ import io.harness.beans.FeatureFlag;
 import io.harness.beans.FeatureName;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.DelegateTokenDetails;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.ff.FeatureFlagService;
 import io.harness.limits.checker.rate.UsageBucket;
 import io.harness.ng.core.NGAccountAccess;
@@ -45,7 +46,6 @@ import io.harness.persistence.HPersistence;
 import io.harness.persistence.PersistentEntity;
 import io.harness.rule.Owner;
 import io.harness.scheduler.PersistentScheduler;
-import io.harness.service.intfc.DelegateNgTokenService;
 
 import software.wings.WingsBaseTest;
 import software.wings.beans.Account;
