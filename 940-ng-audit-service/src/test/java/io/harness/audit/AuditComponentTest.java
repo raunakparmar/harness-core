@@ -1,4 +1,4 @@
-package io.harness.resourcegroup;
+package io.harness.audit;
 
 import com.google.inject.Inject;
 import io.harness.annotations.dev.OwnedBy;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 @Slf4j
 @OwnedBy(PL)
-public class ResourceGroupComponentTest extends ResourceGroupTestBase {
+public class AuditComponentTest extends AuditTestBase{
     @Inject
     private Map<String, TestExecution> tests;
 
