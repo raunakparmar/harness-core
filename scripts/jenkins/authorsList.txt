@@ -230,3 +230,4 @@ Gabriel Aboy gabriel.aboy@harness.io
 Joseph Sentongo joseph.sentongo@harness.io
 Sergey Bobrov sergey.bobrov@harness.io
 William Wissemann william.wissemann@harness.io
+Vitalie Safronovici vitalie.safronovici@harness.io
