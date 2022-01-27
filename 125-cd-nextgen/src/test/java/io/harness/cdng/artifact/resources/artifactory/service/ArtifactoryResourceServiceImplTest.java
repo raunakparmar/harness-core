@@ -23,6 +23,8 @@ import io.harness.CategoryTest;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.beans.IdentifierRef;
 import io.harness.category.element.UnitTests;
+import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryArtifactBuildDetailsDTO;
+import io.harness.cdng.artifact.resources.artifactory.dtos.ArtifactoryRepoDetailsDTO;
 import io.harness.connector.ConnectorInfoDTO;
 import io.harness.connector.ConnectorResponseDTO;
 import io.harness.connector.services.ConnectorService;
@@ -45,7 +47,6 @@ import software.wings.helpers.ext.jenkins.BuildDetails;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,13 +96,13 @@ public class ArtifactoryResourceServiceImplTest extends CategoryTest {
         .getEncryptionDetails(any(), any());
     doReturn(Optional.of(connectorResponseDTO)).when(connectorService).get(any(), any(), any(), any());
 
-    Map<String, String> repositories =
+    ArtifactoryRepoDetailsDTO artifactoryRepoDetailsDTO =
         artifactoryResourceService.getRepositories("any", connectorRef, "orgId", "projectId");
 
     verify(delegateGrpcClientWrapper, times(1)).executeSyncTask(any());
     verify(secretManagerClientService, times(1)).getEncryptionDetails(any(), any());
-    assertThat(repositories.keySet().size()).isEqualTo(1);
-    assertThat(repositories.get("repo")).isEqualTo("repo");
+    assertThat(artifactoryRepoDetailsDTO.getRepositories().keySet().size()).isEqualTo(1);
+    assertThat(artifactoryRepoDetailsDTO.getRepositories().get("repo")).isEqualTo("repo");
   }
 
   @Test
@@ -171,12 +172,12 @@ public class ArtifactoryResourceServiceImplTest extends CategoryTest {
         .getEncryptionDetails(any(), any());
     doReturn(Optional.of(connectorResponseDTO)).when(connectorService).get(any(), any(), any(), any());
 
-    List<BuildDetails> response =
+    List<ArtifactoryArtifactBuildDetailsDTO> response =
         artifactoryResourceService.getBuildDetails("repoName", "filepath", 10, connectorRef, "orgId", "projectId");
 
     verify(delegateGrpcClientWrapper, times(1)).executeSyncTask(any());
     verify(secretManagerClientService, times(1)).getEncryptionDetails(any(), any());
-    assertThat(response).isEqualTo(buildDetails);
+    assertThat(response.get(0).getArtifactPath()).isEqualTo("artifactPath");
   }
 
   @Test
