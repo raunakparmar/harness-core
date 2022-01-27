@@ -489,8 +489,6 @@ public class AccountServiceImpl implements AccountService {
         sampleDataProviderService.createK8sV2SampleApp(account);
       }
     }
-
-    delegateNgTokenService.upsertDefaultToken(account.getUuid(), null, false);
   }
 
   private void enableFeatureFlags(@NotNull Account account, boolean fromDataGen) {
@@ -1173,7 +1171,6 @@ public class AccountServiceImpl implements AccountService {
   public boolean enableAccount(String accountId) {
     Account account = get(accountId);
     setUserStatusInAccount(accountId, true);
-    delegateNgTokenService.upsertDefaultToken(accountId, null, true);
     return setAccountStatusInternal(account, AccountStatus.ACTIVE);
   }
 

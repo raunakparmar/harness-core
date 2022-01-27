@@ -72,6 +72,8 @@ public class DelegateNgTokenResource {
     this.delegateTokenService = delegateTokenService;
   }
 
+  // TODO: ARPIT implement a separate rbac for token (create/view/revoke)
+
   @POST
   @Timed
   @ExceptionMetered
@@ -84,10 +86,8 @@ public class DelegateNgTokenResource {
   public RestResponse<DelegateTokenDetails>
   createToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
                   "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam("orgId") String orgId,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam("projectId") String projectId,
       @Parameter(description = "Delegate Token name") @QueryParam("tokenName") @NotNull String tokenName) {
     DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
     return new RestResponse<>(delegateTokenService.createToken(accountId, owner, tokenName));
@@ -106,10 +106,8 @@ public class DelegateNgTokenResource {
   public RestResponse<Void>
   revokeToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
                   "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam("orgId") String orgId,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam("projectId") String projectId,
       @Parameter(description = "Delegate Token name") @QueryParam("tokenName") @NotNull String tokenName) {
     DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
     delegateTokenService.revokeDelegateToken(accountId, owner, tokenName);
@@ -129,10 +127,8 @@ public class DelegateNgTokenResource {
   public RestResponse<List<DelegateTokenDetails>>
   getDelegateTokens(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
                         "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam("orgId") String orgId,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam("projectId") String projectId,
       @Parameter(description = "Status of Delegate Token (ACTIVE or REVOKED). "
               + "If left empty both active and revoked tokens will be retrieved") @QueryParam("status")
       DelegateTokenStatus status) {
@@ -140,29 +136,30 @@ public class DelegateNgTokenResource {
     return new RestResponse<>(delegateTokenService.getDelegateTokens(accountId, owner, status));
   }
 
-  @PUT
-  @Path("default")
-  @Timed
-  @ExceptionMetered
-  @AuthRule(permissionType = MANAGE_DELEGATES)
-  @Operation(operationId = "upsertDefaultToken",
-      summary = "Creates or a default Delegate Token for account, org and project. "
-          + "If default token already exists its value will be re-generated.",
-      responses =
-      {
-        @io.swagger.v3.oas.annotations.responses.
-        ApiResponse(responseCode = "default", description = "200 Ok response if successfully created default token")
-      })
-  public RestResponse<Void>
-  upsertDefaultToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                         "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
-      @Parameter(description = "skipIfExists") @QueryParam("skipIfExists") Boolean skipIfExists) {
-    delegateTokenService.upsertDefaultToken(
-        accountId, DelegateEntityOwnerHelper.buildOwner(orgId, projectId), skipIfExists);
-    return new RestResponse<>();
-  }
+  // dont needed IMO
+  //  @PUT
+  //  @Path("default")
+  //  @Timed
+  //  @ExceptionMetered
+  //  @AuthRule(permissionType = MANAGE_DELEGATES)
+  //  @Operation(operationId = "upsertDefaultToken",
+  //      summary = "Creates or a default Delegate Token for account, org and project. "
+  //          + "If default token already exists its value will be re-generated.",
+  //      responses =
+  //      {
+  //        @io.swagger.v3.oas.annotations.responses.
+  //        ApiResponse(responseCode = "default", description = "200 Ok response if successfully created default token")
+  //      })
+  //  public RestResponse<Void>
+  //  upsertDefaultToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
+  //                         "accountId") @NotNull String accountId,
+  //      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
+  //          "orgId") String orgId,
+  //      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
+  //          "projectId") String projectId,
+  //      @Parameter(description = "skipIfExists") @QueryParam("skipIfExists") Boolean skipIfExists) {
+  //    delegateTokenService.upsertDefaultToken(
+  //        accountId, DelegateEntityOwnerHelper.buildOwner(orgId, projectId), skipIfExists);
+  //    return new RestResponse<>();
+  //  }
 }

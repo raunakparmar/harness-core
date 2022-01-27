@@ -12,11 +12,13 @@ import static io.harness.data.encoding.EncodingUtils.encodeBase64;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
+import io.harness.beans.EmbeddedUser;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateNgToken;
 import io.harness.delegate.beans.DelegateNgToken.DelegateNgTokenKeys;
 import io.harness.delegate.beans.DelegateToken;
+import io.harness.delegate.beans.DelegateToken.DelegateTokenKeys;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenDetails.DelegateTokenDetailsBuilder;
 import io.harness.delegate.beans.DelegateTokenStatus;
@@ -24,12 +26,18 @@ import io.harness.delegate.dto.DelegateNgTokenDTO;
 import io.harness.delegate.events.DelegateNgTokenCreateEvent;
 import io.harness.delegate.events.DelegateNgTokenRevokeEvent;
 import io.harness.delegate.utils.DelegateEntityOwnerHelper;
+import io.harness.delegateprofile.EmbeddedUserDetails;
 import io.harness.exception.InvalidRequestException;
 import io.harness.outbox.OutboxEvent;
 import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
 import io.harness.service.intfc.DelegateNgTokenService;
 import io.harness.utils.Misc;
+
+import software.wings.beans.Account;
+import software.wings.beans.User;
+import software.wings.security.UserThreadLocal;
+import software.wings.service.intfc.account.AccountCrudObserver;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -49,166 +57,143 @@ import org.mongodb.morphia.query.UpdateOperations;
 @Slf4j
 @ValidateOnExecution
 @OwnedBy(HarnessTeam.DEL)
-public class DelegateNgTokenServiceImpl implements DelegateNgTokenService {
+public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, AccountCrudObserver {
   @Inject private HPersistence persistence;
   @Inject private OutboxService outboxService;
 
   @Override
   public DelegateTokenDetails createToken(String accountId, DelegateEntityOwner owner, String name) {
-    DelegateNgToken delegateToken = DelegateNgToken.builder()
-                                        .accountId(accountId)
-                                        .owner(owner)
-                                        .name(name)
-                                        .status(DelegateTokenStatus.ACTIVE)
-                                        .value(encodeBase64(Misc.generateSecretKey()))
-                                        .build();
     if (!matchNameTokenQuery(accountId, owner, name).asList().isEmpty()) {
-      throw new InvalidRequestException("Token with given name already exists for given account, org and project");
+      throw new InvalidRequestException("Token with given name already exists for given account, org and project.");
     }
+
+    DelegateToken delegateToken = DelegateToken.builder()
+                                      .accountId(accountId)
+                                      .owner(owner)
+                                      .name(name)
+                                      .status(DelegateTokenStatus.ACTIVE)
+                                      .value(encodeBase64(Misc.generateSecretKey()))
+                                      .createdAt(System.currentTimeMillis())
+                                      .createdBy(getEmbeddedUser())
+                                      .build();
+
     persistence.save(delegateToken);
-    publishCreateTokenAuditEvent(delegateToken);
+    // publishCreateTokenAuditEvent(delegateToken);
     return getDelegateTokenDetails(delegateToken, true);
   }
 
   @Override
   public DelegateTokenDetails revokeDelegateToken(String accountId, DelegateEntityOwner owner, String tokenName) {
-    Query<DelegateNgToken> filterQuery = matchNameTokenQuery(accountId, owner, tokenName);
+    Query<DelegateToken> filterQuery = matchNameTokenQuery(accountId, owner, tokenName);
     validateTokenToBeRevoked(filterQuery.get());
-    UpdateOperations<DelegateNgToken> updateOperations =
-        persistence.createUpdateOperations(DelegateNgToken.class)
-            .set(DelegateNgTokenKeys.status, DelegateTokenStatus.REVOKED)
-            .set(DelegateNgTokenKeys.validUntil,
+    UpdateOperations<DelegateToken> updateOperations =
+        persistence.createUpdateOperations(DelegateToken.class)
+            .set(DelegateTokenKeys.status, DelegateTokenStatus.REVOKED)
+            .set(DelegateTokenKeys.validUntil,
                 Date.from(OffsetDateTime.now().plusDays(DelegateToken.TTL.toDays()).toInstant()));
-    FindAndModifyOptions findAndModifyOptions = new FindAndModifyOptions().upsert(false).returnNew(true);
-    DelegateNgToken updatedDelegateToken =
-        persistence.findAndModify(filterQuery, updateOperations, findAndModifyOptions);
-    publishRevokeTokenAuditEvent(updatedDelegateToken);
+    DelegateToken updatedDelegateToken =
+        persistence.findAndModify(filterQuery, updateOperations, new FindAndModifyOptions());
+    // publishRevokeTokenAuditEvent(updatedDelegateToken);
     return getDelegateTokenDetails(updatedDelegateToken, false);
   }
 
   @Override
   public List<DelegateTokenDetails> getDelegateTokens(
       String accountId, DelegateEntityOwner owner, DelegateTokenStatus status) {
-    Query<DelegateNgToken> query = nameStartsWithTokenQuery(accountId, owner, null);
-    if (null != status) {
-      query = query.field(DelegateNgTokenKeys.status).equal(status);
+    Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
+                                     .filter(DelegateTokenKeys.accountId, accountId)
+                                     .filter(DelegateTokenKeys.isNg, true)
+                                     .filter(DelegateTokenKeys.owner, owner);
+    if (status != null) {
+      query = query.filter(DelegateNgTokenKeys.status, status);
     }
-    List<DelegateNgToken> queryResult = query.asList();
-    return queryResult.stream().map(token -> getDelegateTokenDetails(token, false)).collect(Collectors.toList());
+    return query.asList().stream().map(token -> getDelegateTokenDetails(token, false)).collect(Collectors.toList());
   }
 
   @Override
   public DelegateTokenDetails getDelegateToken(String accountId, DelegateEntityOwner owner, String name) {
-    Query<DelegateNgToken> query = matchNameTokenQuery(accountId, owner, name);
-    List<DelegateNgToken> queryResult = query.asList();
-    return queryResult.stream().map(token -> getDelegateTokenDetails(token, false)).findFirst().orElse(null);
+    return matchNameTokenQuery(accountId, owner, name)
+        .asList()
+        .stream()
+        .map(token -> getDelegateTokenDetails(token, false))
+        .findFirst()
+        .orElse(null);
   }
 
   @Override
   public String getDelegateTokenValue(String accountId, DelegateEntityOwner owner, String name) {
-    Query<DelegateNgToken> query = matchNameTokenQuery(accountId, owner, name);
-    List<DelegateNgToken> queryResult = query.asList();
-    DelegateTokenDetails delegateTokenDetails =
-        queryResult.stream().map(token -> getDelegateTokenDetails(token, true)).findFirst().orElse(null);
+    DelegateTokenDetails delegateTokenDetails = matchNameTokenQuery(accountId, owner, name)
+                                                    .asList()
+                                                    .stream()
+                                                    .map(token -> getDelegateTokenDetails(token, true))
+                                                    .findFirst()
+                                                    .orElse(null);
     return delegateTokenDetails != null ? delegateTokenDetails.getValue() : null;
   }
 
   @Override
-  public DelegateTokenDetails upsertDefaultToken(
-      String accountIdentifier, DelegateEntityOwner owner, boolean skipIfExists) {
-    Query<DelegateNgToken> query = persistence.createQuery(DelegateNgToken.class)
-                                       .filter(DelegateNgTokenKeys.accountId, accountIdentifier)
-                                       .filter(DelegateNgTokenKeys.name, DEFAULT_TOKEN_NAME);
+  public DelegateTokenDetails upsertDefaultToken(String accountId, DelegateEntityOwner owner, boolean skipIfExists) {
+    Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
+                                     .filter(DelegateTokenKeys.accountId, accountId)
+                                     .filter(DelegateTokenKeys.name, DEFAULT_TOKEN_NAME);
 
-    if (null != owner) {
+    if (owner != null) {
       query = query.filter(DelegateNgTokenKeys.owner, owner);
     }
 
-    if (skipIfExists) {
-      Query<DelegateNgToken> queryExistsActive = query.filter(DelegateNgTokenKeys.status, DelegateTokenStatus.ACTIVE);
-      Optional<DelegateNgToken> token = queryExistsActive.asList().stream().findAny();
-      if (token.isPresent()) {
-        log.info("Active default Delegate NG Token already exists for account {}, organization {} and project {}",
-            accountIdentifier, extractOrganization(owner), extractProject(owner));
-        return getDelegateTokenDetails(token.get(), true);
-      }
+    Query<DelegateToken> queryExistsActive = query.filter(DelegateTokenKeys.status, DelegateTokenStatus.ACTIVE);
+    Optional<DelegateToken> token = queryExistsActive.asList().stream().findAny();
+    if (token.isPresent() && skipIfExists) {
+      log.info("Active default Delegate NG Token already exists for account {}, organization {} and project {}",
+          accountId, extractOrganization(owner), extractProject(owner));
+      return getDelegateTokenDetails(token.get(), true);
     }
 
-    UpdateOperations<DelegateNgToken> updateOperations =
-        persistence.createUpdateOperations(DelegateNgToken.class)
-            .setOnInsert(DelegateNgTokenKeys.uuid, UUIDGenerator.generateUuid())
-            .setOnInsert(DelegateNgTokenKeys.accountId, accountIdentifier)
+    UpdateOperations<DelegateToken> updateOperations =
+        persistence.createUpdateOperations(DelegateToken.class)
+            .setOnInsert(DelegateTokenKeys.uuid, UUIDGenerator.generateUuid())
+            .setOnInsert(DelegateNgTokenKeys.accountId, accountId)
             .set(DelegateNgTokenKeys.name, DEFAULT_TOKEN_NAME)
             .set(DelegateNgTokenKeys.status, DelegateTokenStatus.ACTIVE)
             .set(DelegateNgTokenKeys.value, encodeBase64(Misc.generateSecretKey()));
 
-    DelegateNgToken delegateToken = persistence.upsert(query, updateOperations, HPersistence.upsertReturnNewOptions);
-    log.info("Default Delegate NG Token inserted/updated for account {}, organization {} and project {}",
-        accountIdentifier, extractOrganization(owner), extractProject(owner));
+    DelegateToken delegateToken = persistence.upsert(query, updateOperations, HPersistence.upsertReturnNewOptions);
+    log.info("Default Delegate NG Token inserted/updated for account {}, organization {} and project {}", accountId,
+        extractOrganization(owner), extractProject(owner));
     return getDelegateTokenDetails(delegateToken, true);
   }
 
+  // TODO: Arpit onAccountDeleted
+
   @Override
-  public List<String> getOrgsWithActiveDefaultDelegateTokens(String accountId) {
-    List<DelegateNgToken> defaultTokens = getActiveDefaultTokensForAccount(accountId);
-    return defaultTokens.stream()
-        .filter(token -> DelegateEntityOwnerHelper.isOrganisation(token.getOwner()))
-        .map(token -> token.getOwner().getIdentifier())
-        .collect(Collectors.toList());
+  public void onAccountCreated(Account account) {
+    upsertDefaultToken(account.getUuid(), null, false);
   }
 
   @Override
-  public List<String> getProjectsWithActiveDefaultDelegateTokens(String accountId) {
-    List<DelegateNgToken> defaultTokens = getActiveDefaultTokensForAccount(accountId);
-    return defaultTokens.stream()
-        .filter(token -> DelegateEntityOwnerHelper.isProject(token.getOwner()))
-        .map(token -> token.getOwner().getIdentifier())
-        .collect(Collectors.toList());
+  public void onAccountUpdated(Account account) {
+    // do nothing
   }
 
-  private List<DelegateNgToken> getActiveDefaultTokensForAccount(String accountId) {
-    return persistence.createQuery(DelegateNgToken.class)
-        .field(DelegateNgTokenKeys.accountId)
-        .equal(accountId)
-        .field(DelegateNgTokenKeys.name)
-        .equal(DEFAULT_TOKEN_NAME)
-        .field(DelegateNgTokenKeys.status)
-        .equal(DelegateTokenStatus.ACTIVE)
-        .field(DelegateNgTokenKeys.owner)
-        .exists()
-        .asList();
-  }
-
-  private Query<DelegateNgToken> nameStartsWithTokenQuery(
-      String accountId, DelegateEntityOwner owner, String tokenName) {
-    Query<DelegateNgToken> query =
-        persistence.createQuery(DelegateNgToken.class).field(DelegateNgTokenKeys.accountId).equal(accountId);
-    query = query.field(DelegateNgTokenKeys.owner).equal(owner);
+  private Query<DelegateToken> matchNameTokenQuery(String accountId, DelegateEntityOwner owner, String tokenName) {
+    Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
+                                     .field(DelegateTokenKeys.accountId)
+                                     .equal(accountId)
+                                     .field(DelegateTokenKeys.owner)
+                                     .equal(owner);
     if (!StringUtils.isEmpty(tokenName)) {
-      query = query.field(DelegateNgTokenKeys.name).startsWith(tokenName);
+      query = query.field(DelegateTokenKeys.name).equal(tokenName);
     }
     return query;
   }
 
-  private Query<DelegateNgToken> matchNameTokenQuery(String accountId, DelegateEntityOwner owner, String tokenName) {
-    Query<DelegateNgToken> query =
-        persistence.createQuery(DelegateNgToken.class).field(DelegateNgTokenKeys.accountId).equal(accountId);
-    query = query.field(DelegateNgTokenKeys.owner).equal(owner);
-    if (!StringUtils.isEmpty(tokenName)) {
-      query = query.field(DelegateNgTokenKeys.name).equal(tokenName);
-    }
-    return query;
-  }
-
-  private DelegateTokenDetails getDelegateTokenDetails(DelegateNgToken delegateToken, boolean includeTokenValue) {
-    DelegateTokenDetailsBuilder delegateTokenDetailsBuilder = DelegateTokenDetails.builder();
-
-    delegateTokenDetailsBuilder.identifier(delegateToken.getIdentifier())
-        .accountId(delegateToken.getAccountId())
-        .name(delegateToken.getName())
-        .createdAt(delegateToken.getCreatedAt())
-        .createdBy(delegateToken.getCreatedBy())
-        .status(delegateToken.getStatus());
+  private DelegateTokenDetails getDelegateTokenDetails(DelegateToken delegateToken, boolean includeTokenValue) {
+    DelegateTokenDetailsBuilder delegateTokenDetailsBuilder = DelegateTokenDetails.builder()
+                                                                  .accountId(delegateToken.getAccountId())
+                                                                  .name(delegateToken.getName())
+                                                                  .createdAt(delegateToken.getCreatedAt())
+                                                                  .createdBy(delegateToken.getCreatedBy())
+                                                                  .status(delegateToken.getStatus());
 
     if (includeTokenValue) {
       delegateTokenDetailsBuilder.value(decodeBase64ToString(delegateToken.getValue()));
@@ -221,29 +206,17 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService {
     return delegateTokenDetailsBuilder.build();
   }
 
-  private OutboxEvent publishCreateTokenAuditEvent(DelegateNgToken delegateToken) {
-    DelegateNgTokenDTO token = convert(delegateToken);
-    return outboxService.save(DelegateNgTokenCreateEvent.builder().token(token).build());
-  }
+  //  private OutboxEvent publishCreateTokenAuditEvent(DelegateToken delegateToken) {
+  //    DelegateNgTokenDTO token = convert(delegateToken);
+  //    return outboxService.save(DelegateNgTokenCreateEvent.builder().token(token).build());
+  //  }
 
-  private OutboxEvent publishRevokeTokenAuditEvent(DelegateNgToken delegateToken) {
-    DelegateNgTokenDTO token = convert(delegateToken);
-    return outboxService.save(DelegateNgTokenRevokeEvent.builder().token(token).build());
-  }
+  //  private OutboxEvent publishRevokeTokenAuditEvent(DelegateNgToken delegateToken) {
+  //    DelegateNgTokenDTO token = convert(delegateToken);
+  //    return outboxService.save(DelegateNgTokenRevokeEvent.builder().token(token).build());
+  //  }
 
-  private DelegateNgTokenDTO convert(DelegateNgToken delegateToken) {
-    return DelegateNgTokenDTO.builder()
-        .accountIdentifier(delegateToken.getAccountId())
-        .orgIdentifier(DelegateEntityOwnerHelper.extractOrgIdFromOwnerIdentifier(
-            delegateToken.getOwner() != null ? delegateToken.getOwner().getIdentifier() : null))
-        .projectIdentifier(DelegateEntityOwnerHelper.extractProjectIdFromOwnerIdentifier(
-            delegateToken.getOwner() != null ? delegateToken.getOwner().getIdentifier() : null))
-        .name(delegateToken.getName())
-        .identifier(delegateToken.getIdentifier())
-        .build();
-  }
-
-  private void validateTokenToBeRevoked(DelegateNgToken delegateToken) {
+  private void validateTokenToBeRevoked(DelegateToken delegateToken) {
     if (delegateToken == null) {
       throw new InvalidRequestException("Specified token does not exist.");
     }
@@ -260,5 +233,13 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService {
   private String extractProject(DelegateEntityOwner owner) {
     return owner != null ? DelegateEntityOwnerHelper.extractProjectIdFromOwnerIdentifier(owner.getIdentifier())
                          : StringUtils.EMPTY;
+  }
+
+  private EmbeddedUser getEmbeddedUser() {
+    User user = UserThreadLocal.get();
+    if (user == null) {
+      return EmbeddedUser.builder().build();
+    }
+    return EmbeddedUser.builder().uuid(user.getUuid()).name(user.getName()).email(user.getEmail()).build();
   }
 }

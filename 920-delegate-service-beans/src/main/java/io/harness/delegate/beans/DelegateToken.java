@@ -42,7 +42,7 @@ import org.mongodb.morphia.annotations.Id;
 @OwnedBy(HarnessTeam.DEL)
 @StoreIn(DbAliases.ALL)
 public class DelegateToken implements PersistentEntity, UuidAware, CreatedAtAware, CreatedByAware, NameAndValueAccess {
-  public static final Duration TTL = ofDays(30);
+  public static final Duration TTL = ofDays(7);
 
   public static List<MongoIndex> mongoIndexes() {
     return ImmutableList.<MongoIndex>builder()
@@ -67,6 +67,8 @@ public class DelegateToken implements PersistentEntity, UuidAware, CreatedAtAwar
   private long createdAt;
   private DelegateTokenStatus status;
   private String value;
+  private boolean isNg;
+  private DelegateEntityOwner owner;
 
   @FdTtlIndex private Date validUntil;
 }

@@ -27,8 +27,4 @@ public interface DelegateNgTokenService {
   String getDelegateTokenValue(String accountId, DelegateEntityOwner owner, String name);
 
   DelegateTokenDetails upsertDefaultToken(String accountIdentifier, DelegateEntityOwner owner, boolean skipIfExists);
-
-  List<String> getOrgsWithActiveDefaultDelegateTokens(String accountId);
-
-  List<String> getProjectsWithActiveDefaultDelegateTokens(String accountId);
 }
