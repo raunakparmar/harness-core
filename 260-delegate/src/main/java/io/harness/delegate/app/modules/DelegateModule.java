@@ -856,6 +856,17 @@ public class DelegateModule extends AbstractModule {
             .build());
   }
 
+  @Provides
+  @Singleton
+  @Named("delegateAgentMetricsExecutor")
+  public ScheduledExecutorService delegateAgentMetricsExecutor() {
+    return new ScheduledThreadPoolExecutor(1,
+        new ThreadFactoryBuilder()
+            .setNameFormat("delegate-agent-metrics-executor-%d")
+            .setPriority(Thread.NORM_PRIORITY)
+            .build());
+  }
+
   @Override
   protected void configure() {
     bindDelegateTasks();
