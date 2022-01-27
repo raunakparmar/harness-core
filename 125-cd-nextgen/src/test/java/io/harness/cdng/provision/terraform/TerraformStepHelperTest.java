@@ -9,13 +9,21 @@ package io.harness.cdng.provision.terraform;
 
 import static io.harness.cdng.provision.terraform.TerraformPlanCommand.APPLY;
 import static io.harness.delegate.beans.connector.ConnectorType.GITHUB;
-import static io.harness.rule.OwnerRule.*;
+import static io.harness.rule.OwnerRule.NAMAN_TALAYCHA;
+import static io.harness.rule.OwnerRule.NGONZALEZ;
+import static io.harness.rule.OwnerRule.ROHITKARELIA;
+import static io.harness.rule.OwnerRule.SATYAM;
+import static io.harness.rule.OwnerRule.TMACARI;
 
 import static java.lang.String.format;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -25,7 +33,17 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.fileservice.FileServiceClientFactory;
 import io.harness.cdng.k8s.K8sStepHelper;
-import io.harness.cdng.manifest.yaml.*;
+import io.harness.cdng.manifest.yaml.ArtifactoryStoreConfig;
+import io.harness.cdng.manifest.yaml.BitBucketStoreDTO;
+import io.harness.cdng.manifest.yaml.BitbucketStore;
+import io.harness.cdng.manifest.yaml.GitLabStore;
+import io.harness.cdng.manifest.yaml.GitLabStoreDTO;
+import io.harness.cdng.manifest.yaml.GitStore;
+import io.harness.cdng.manifest.yaml.GitStoreConfig;
+import io.harness.cdng.manifest.yaml.GitStoreConfigDTO;
+import io.harness.cdng.manifest.yaml.GitStoreDTO;
+import io.harness.cdng.manifest.yaml.GithubStore;
+import io.harness.cdng.manifest.yaml.GithubStoreDTO;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfig;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigType;
 import io.harness.cdng.manifest.yaml.storeConfig.StoreConfigWrapper;
@@ -68,7 +86,12 @@ import io.harness.security.encryption.EncryptionType;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
@@ -300,7 +323,7 @@ public class TerraformStepHelperTest extends CategoryTest {
   public void testSaveTerraformInheritOutput() {
     Ambiance ambiance = getAmbiance();
     gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
-                                             .branch(("master"))
+                                             .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("terraform"))
@@ -341,14 +364,14 @@ public class TerraformStepHelperTest extends CategoryTest {
   public void testSaveRollbackDestroyConfigInline() {
     Ambiance ambiance = getAmbiance();
     gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
-                                             .branch(("master"))
+                                             .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("ConnectorRef"))
                                              .build();
     gitStoreConfig gitStoreVarFiles =
         gitStoreConfig.builder()
-            .branch(("master"))
+            .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
@@ -406,7 +429,7 @@ public class TerraformStepHelperTest extends CategoryTest {
     Ambiance ambiance = getAmbiance();
     gitStoreConfig gitStoreVarFiles =
         gitStoreConfig.builder()
-            .branch(("master"))
+            .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
@@ -520,7 +543,7 @@ public class TerraformStepHelperTest extends CategoryTest {
                                                            .build();
     gitStoreConfig gitStoreVarFiles =
         gitStoreConfig.builder()
-            .branch(("master"))
+            .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
@@ -839,7 +862,7 @@ public class TerraformStepHelperTest extends CategoryTest {
   public void testPrepareEntityDetailsForVarFiles() {
     gitStoreConfig gitStoreVarFiles =
         gitStoreConfig.builder()
-            .branch(("master"))
+            .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
@@ -1176,14 +1199,14 @@ public class TerraformStepHelperTest extends CategoryTest {
   public void testSaveRollbackDestroyConfigInlineOtherStore() {
     Ambiance ambiance = getAmbiance();
     gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
-                                             .branch(("master"))
+                                             .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("ConnectorRef"))
                                              .build();
     gitStoreConfig gitStoreVarFiles =
         gitStoreConfig.builder()
-            .branch(("master"))
+            .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))

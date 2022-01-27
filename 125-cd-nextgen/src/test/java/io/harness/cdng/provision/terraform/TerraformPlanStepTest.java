@@ -12,7 +12,9 @@ import static io.harness.rule.OwnerRule.NGONZALEZ;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.doReturn;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -210,13 +212,13 @@ public class TerraformPlanStepTest extends CategoryTest {
   public void testValidateResourcesWithGithubStore() {
     Ambiance ambiance = getAmbiance();
     gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
-                                             .branch(("master"))
+                                             .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("terraform"))
                                              .build();
     gitStoreConfig gitStoreVarFiles = gitStoreConfig.builder()
-                                          .branch(("master"))
+                                          .branch("master")
                                           .fetchType(FetchType.BRANCH)
                                           .folderPath(ParameterField.createValueField("VarFiles/"))
                                           .connectoref(ParameterField.createValueField("terraform"))
@@ -276,13 +278,13 @@ public class TerraformPlanStepTest extends CategoryTest {
   public void testObtainTaskAfterRbacWithGithubStore() {
     Ambiance ambiance = getAmbiance();
     gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
-                                             .branch(("master"))
+                                             .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("terraform"))
                                              .build();
     gitStoreConfig gitStoreVarFiles = gitStoreConfig.builder()
-                                          .branch(("master"))
+                                          .branch("master")
                                           .fetchType(FetchType.BRANCH)
                                           .folderPath(ParameterField.createValueField("VarFiles/"))
                                           .connectoref(ParameterField.createValueField("terraform"))
