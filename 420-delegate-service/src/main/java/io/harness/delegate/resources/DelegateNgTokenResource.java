@@ -44,8 +44,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import lombok.extern.slf4j.Slf4j;
 
-@Api("/v2/delegate-token")
-@Path("/v2/delegate-token")
+@Api("/ng/delegate-token")
+@Path("/ng/delegate-token")
 @Produces("application/json")
 @Scope(DELEGATE)
 @Slf4j
@@ -84,10 +84,8 @@ public class DelegateNgTokenResource {
   public RestResponse<DelegateTokenDetails>
   createToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
                   "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam("orgId") String orgId,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam("projectId") String projectId,
       @Parameter(description = "Delegate Token name") @QueryParam("tokenName") @NotNull String tokenName) {
     DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
     return new RestResponse<>(delegateTokenService.createToken(accountId, owner, tokenName));
@@ -106,10 +104,8 @@ public class DelegateNgTokenResource {
   public RestResponse<Void>
   revokeToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
                   "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam("orgId") String orgId,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam("projectId") String projectId,
       @Parameter(description = "Delegate Token name") @QueryParam("tokenName") @NotNull String tokenName) {
     DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(orgId, projectId);
     delegateTokenService.revokeDelegateToken(accountId, owner, tokenName);
@@ -129,10 +125,8 @@ public class DelegateNgTokenResource {
   public RestResponse<List<DelegateTokenDetails>>
   getDelegateTokens(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
                         "accountId") @NotNull String accountId,
-      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.ORG_KEY) String orgId,
-      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
-          NGCommonEntityConstants.PROJECT_KEY) String projectId,
+      @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam("orgId") String orgId,
+      @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam("projectId") String projectId,
       @Parameter(description = "Status of Delegate Token (ACTIVE or REVOKED). "
               + "If left empty both active and revoked tokens will be retrieved") @QueryParam("status")
       DelegateTokenStatus status) {
