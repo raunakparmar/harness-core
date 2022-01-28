@@ -55,7 +55,7 @@ public class ArtifactoryArtifactResource {
   @Path("getRepositoriesDetails")
   @ApiOperation(value = "Gets repository details", nickname = "getRepositoriesDetailsForArtifactory")
   public ResponseDTO<ArtifactoryRepoDetailsDTO> getRepositoriesDetails(
-      @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
+      @NotNull @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
       @QueryParam("repositoryType") @DefaultValue("any") String repositoryType,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
@@ -71,9 +71,9 @@ public class ArtifactoryArtifactResource {
   @Path("getBuildsDetails")
   @ApiOperation(value = "Gets builds details", nickname = "getBuildsDetailsForArtifactory")
   public ResponseDTO<List<ArtifactoryArtifactBuildDetailsDTO>> getBuildsDetails(
-      @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
-      @QueryParam("repositoryName") String repositoryName, @QueryParam("filePath") String filePath,
-      @QueryParam("maxVersions") int maxVersions,
+      @NotNull @QueryParam("connectorRef") String artifactoryConnectorIdentifier,
+      @NotNull @QueryParam("repositoryName") String repositoryName, @QueryParam("filePath") String filePath,
+      @NotNull @QueryParam("maxVersions") int maxVersions,
       @NotNull @QueryParam(NGCommonEntityConstants.ACCOUNT_KEY) String accountId,
       @NotNull @QueryParam(NGCommonEntityConstants.ORG_KEY) String orgIdentifier,
       @NotNull @QueryParam(NGCommonEntityConstants.PROJECT_KEY) String projectIdentifier) {
