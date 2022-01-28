@@ -1,9 +1,9 @@
 package io.harness.resourcegroup.resourceclient.gitops;
 
-import static java.util.stream.Collectors.toList;
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE;
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE_INCLUDING_CHILD_SCOPES;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.stripToNull;
 
 import io.harness.beans.Scope;
@@ -21,7 +21,6 @@ import io.harness.resourcegroup.framework.service.ResourceInfo;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Singleton;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.io.IOException;

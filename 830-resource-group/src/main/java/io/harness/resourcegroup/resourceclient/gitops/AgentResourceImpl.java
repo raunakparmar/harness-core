@@ -20,8 +20,8 @@ import io.harness.resourcegroup.beans.ValidatorType;
 import io.harness.resourcegroup.framework.service.Resource;
 import io.harness.resourcegroup.framework.service.ResourceInfo;
 
-import com.google.inject.Inject;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
