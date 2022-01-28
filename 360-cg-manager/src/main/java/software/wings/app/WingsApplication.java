@@ -63,6 +63,7 @@ import io.harness.delegate.beans.StartupMode;
 import io.harness.delegate.event.handler.DelegateProfileEventHandler;
 import io.harness.delegate.eventstream.EntityCRUDConsumer;
 import io.harness.delegate.resources.DelegateTaskResource;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.telemetry.DelegateTelemetryPublisher;
 import io.harness.dms.DmsModule;
 import io.harness.event.EventsModule;
@@ -146,10 +147,7 @@ import io.harness.serializer.AnnotationAwareJsonSubtypeResolver;
 import io.harness.serializer.CurrentGenRegistrars;
 import io.harness.serializer.KryoRegistrar;
 import io.harness.service.DelegateServiceModule;
-import io.harness.service.impl.DelegateInsightsServiceImpl;
-import io.harness.service.impl.DelegateSyncServiceImpl;
-import io.harness.service.impl.DelegateTaskServiceImpl;
-import io.harness.service.impl.DelegateTokenServiceImpl;
+import io.harness.service.impl.*;
 import io.harness.service.intfc.DelegateProfileObserver;
 import io.harness.service.intfc.DelegateTaskService;
 import io.harness.service.intfc.DelegateTokenService;
@@ -323,13 +321,7 @@ import io.dropwizard.setup.Environment;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -591,11 +583,12 @@ public class WingsApplication extends Application<MainConfiguration> {
                                     .observerClass(PerpetualTaskStateObserver.class)
                                     .observer(DelegateInsightsServiceImpl.class)
                                     .build());
-            remoteObservers.add(RemoteObserver.builder()
-                                    .subjectCLass(AccountServiceImpl.class)
-                                    .observerClass(AccountCrudObserver.class)
-                                    .observer(DelegateTokenServiceImpl.class)
-                                    .build());
+            remoteObservers.add(
+                RemoteObserver.builder()
+                    .subjectCLass(AccountServiceImpl.class)
+                    .observerClass(AccountCrudObserver.class)
+                    .observers(Arrays.asList(DelegateTokenServiceImpl.class, DelegateNgTokenServiceImpl.class))
+                    .build());
           }
           return remoteObservers;
         }
@@ -1386,6 +1379,9 @@ public class WingsApplication extends Application<MainConfiguration> {
     accountService.getAccountCrudSubject().register(injector.getInstance(Key.get(CEPerpetualTaskHandler.class)));
     accountService.getAccountCrudSubject().register(
         (DelegateTokenServiceImpl) injector.getInstance(Key.get(DelegateTokenService.class)));
+
+    accountService.getAccountCrudSubject().register(
+        (DelegateNgTokenServiceImpl) injector.getInstance(Key.get(DelegateNgTokenService.class)));
 
     ApplicationManifestServiceImpl applicationManifestService =
         (ApplicationManifestServiceImpl) injector.getInstance(Key.get(ApplicationManifestService.class));

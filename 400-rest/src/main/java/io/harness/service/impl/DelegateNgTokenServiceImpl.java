@@ -12,7 +12,6 @@ import static io.harness.data.encoding.EncodingUtils.encodeBase64;
 
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.beans.EmbeddedUser;
 import io.harness.data.structure.UUIDGenerator;
 import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateToken;
@@ -28,8 +27,6 @@ import io.harness.persistence.HPersistence;
 import io.harness.utils.Misc;
 
 import software.wings.beans.Account;
-import software.wings.beans.User;
-import software.wings.security.UserThreadLocal;
 import software.wings.service.intfc.account.AccountCrudObserver;
 
 import com.google.inject.Inject;
@@ -72,8 +69,6 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                       .name(name)
                                       .status(DelegateTokenStatus.ACTIVE)
                                       .value(encodeBase64(Misc.generateSecretKey()))
-                                      .createdAt(System.currentTimeMillis())
-                                      .createdBy(getEmbeddedUser())
                                       .build();
 
     persistence.save(delegateToken);
@@ -232,13 +227,5 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
   private String extractProject(DelegateEntityOwner owner) {
     return owner != null ? DelegateEntityOwnerHelper.extractProjectIdFromOwnerIdentifier(owner.getIdentifier())
                          : StringUtils.EMPTY;
-  }
-
-  private EmbeddedUser getEmbeddedUser() {
-    User user = UserThreadLocal.get();
-    if (user == null) {
-      return EmbeddedUser.builder().build();
-    }
-    return EmbeddedUser.builder().uuid(user.getUuid()).name(user.getName()).email(user.getEmail()).build();
   }
 }
