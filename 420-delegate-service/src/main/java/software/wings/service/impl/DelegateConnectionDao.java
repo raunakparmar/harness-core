@@ -65,7 +65,7 @@ public class DelegateConnectionDao {
         .count();
   }
 
-  public Map<String, List<String>> obtainActiveDelegatesPerVersion(String version) {
+  public Map<String, List<String>> obtainActiveDelegatesPerAccount(String version) {
     List<DelegateConnection> delegateConnections = persistence.createQuery(DelegateConnection.class)
                                                        .field(DelegateConnectionKeys.disconnected)
                                                        .notEqual(Boolean.TRUE)

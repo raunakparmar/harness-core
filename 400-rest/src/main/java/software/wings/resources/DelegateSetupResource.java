@@ -41,6 +41,8 @@ import io.harness.delegate.beans.DelegateApproval;
 import io.harness.delegate.beans.DelegateSetupDetails;
 import io.harness.delegate.beans.DelegateSizeDetails;
 import io.harness.delegate.task.DelegateLogContext;
+import io.harness.exception.UnauthorizedException;
+import io.harness.exception.WingsException;
 import io.harness.k8s.KubernetesConvention;
 import io.harness.logging.AccountLogContext;
 import io.harness.logging.AutoLogContext;
@@ -52,11 +54,13 @@ import io.harness.service.intfc.DelegateCache;
 import software.wings.beans.CEDelegateStatus;
 import software.wings.beans.DelegateStatus;
 import software.wings.helpers.ext.url.SubdomainUrlHelperIntfc;
+import software.wings.security.UserThreadLocal;
 import software.wings.security.annotations.AuthRule;
 import software.wings.security.annotations.Scope;
 import software.wings.service.intfc.DelegateScopeService;
 import software.wings.service.intfc.DelegateService;
 import software.wings.service.intfc.DownloadTokenService;
+import software.wings.service.intfc.HarnessUserGroupService;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
@@ -116,17 +120,20 @@ public class DelegateSetupResource {
   private final DownloadTokenService downloadTokenService;
   private final SubdomainUrlHelperIntfc subdomainUrlHelper;
   private final AccessControlClient accessControlClient;
+  private final HarnessUserGroupService harnessUserGroupService;
 
   @Inject
   public DelegateSetupResource(DelegateService delegateService, DelegateScopeService delegateScopeService,
       DownloadTokenService downloadTokenService, SubdomainUrlHelperIntfc subdomainUrlHelper,
-      DelegateCache delegateCache, AccessControlClient accessControlClient) {
+      DelegateCache delegateCache, AccessControlClient accessControlClient,
+      HarnessUserGroupService harnessUserGroupService) {
     this.delegateService = delegateService;
     this.delegateScopeService = delegateScopeService;
     this.downloadTokenService = downloadTokenService;
     this.subdomainUrlHelper = subdomainUrlHelper;
     this.delegateCache = delegateCache;
     this.accessControlClient = accessControlClient;
+    this.harnessUserGroupService = harnessUserGroupService;
   }
 
   @GET
@@ -190,12 +197,17 @@ public class DelegateSetupResource {
   }
 
   @GET
-  @Path("delegates-with-primary")
+  @Path("delegates-with-version")
   @Timed
   @ExceptionMetered
   @PublicApi
-  public RestResponse<Map<String, List<String>>> getDelegatesWithPrimary() {
-    return new RestResponse<>(delegateService.getActiveDelegatesWithPrimary());
+  public RestResponse<Map<String, List<String>>> getDelegatesWithPrimary(
+      @QueryParam("version") @NotEmpty String version) {
+    if (!harnessUserGroupService.isHarnessSupportUser(UserThreadLocal.get().getUuid())) {
+      throw new UnauthorizedException("You don't have the permissions to perform this action.", WingsException.USER);
+    }
+
+    return new RestResponse<>(delegateService.getActiveDelegatesPerAccount(version));
   }
 
   @GET

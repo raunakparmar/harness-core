@@ -71,7 +71,7 @@ public interface DelegateService extends OwnedByAccount {
 
   Double getConnectedRatioWithPrimary(String targetVersion);
 
-  Map<String, List<String>> getActiveDelegatesWithPrimary();
+  Map<String, List<String>> getActiveDelegatesPerAccount(String targetVersion);
 
   DelegateSetupDetails validateKubernetesYaml(String accountId, DelegateSetupDetails delegateSetupDetails);
 

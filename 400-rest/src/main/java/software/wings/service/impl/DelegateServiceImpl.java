@@ -592,12 +592,11 @@ public class DelegateServiceImpl implements DelegateService {
   }
 
   @Override
-  public Map<String, List<String>> getActiveDelegatesWithPrimary() {
-    String primaryVersion = Arrays.stream(configurationController.getPrimaryVersion().split("-")).findFirst().get();
-    Map<String, List<String>> delegatesPerVersion =
-        delegateConnectionDao.obtainActiveDelegatesPerVersion(primaryVersion);
+  public Map<String, List<String>> getActiveDelegatesPerAccount(String version) {
+    version = Arrays.stream(version.split("-")).findFirst().get();
+    Map<String, List<String>> delegatesPerAccount = delegateConnectionDao.obtainActiveDelegatesPerAccount(version);
 
-    return delegatesPerVersion;
+    return delegatesPerAccount;
   }
 
   @Override
