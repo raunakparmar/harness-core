@@ -18,12 +18,12 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenStatus;
+import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.exception.InvalidRequestException;
 import io.harness.outbox.api.OutboxService;
 import io.harness.persistence.HPersistence;
 import io.harness.rule.Owner;
 import io.harness.service.impl.DelegateNgTokenServiceImpl;
-import io.harness.service.intfc.DelegateNgTokenService;
 
 import com.google.inject.Inject;
 import org.junit.Before;
