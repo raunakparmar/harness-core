@@ -1,7 +1,6 @@
 package io.harness.resourcegroup.resourceclient.gitops;
 
 import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE;
-import static io.harness.resourcegroup.beans.ValidatorType.BY_RESOURCE_TYPE_INCLUDING_CHILD_SCOPES;
 
 import io.harness.beans.Scope;
 import io.harness.beans.ScopeLevel;
