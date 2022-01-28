@@ -23,7 +23,7 @@ import lombok.experimental.SuperBuilder;
 @OwnedBy(CDP)
 public abstract class FileStoreFetchFilesConfig implements StoreDelegateConfig {
   String identifier;
-  String manifestType;
+  String manifestStoreType;
   ConnectorInfoDTO connectorDTO;
   List<EncryptedDataDetail> encryptedDataDetails;
   boolean succeedIfFileNotFound;

@@ -34,13 +34,11 @@ import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
 import io.harness.cdng.fileservice.FileServiceClientFactory;
 import io.harness.cdng.k8s.K8sStepHelper;
-import io.harness.cdng.manifest.yaml.ArtifactoryStoreConfig;
 import io.harness.cdng.manifest.yaml.BitBucketStoreDTO;
 import io.harness.cdng.manifest.yaml.BitbucketStore;
 import io.harness.cdng.manifest.yaml.GitLabStore;
 import io.harness.cdng.manifest.yaml.GitLabStoreDTO;
 import io.harness.cdng.manifest.yaml.GitStore;
-import io.harness.cdng.manifest.yaml.GitStoreConfig;
 import io.harness.cdng.manifest.yaml.GitStoreConfigDTO;
 import io.harness.cdng.manifest.yaml.GitStoreDTO;
 import io.harness.cdng.manifest.yaml.GithubStore;
@@ -136,7 +134,7 @@ public class TerraformStepHelperTest extends CategoryTest {
 
   @Data
   @Builder
-  private static class gitStoreConfig {
+  private static class GitStoreConfig {
     private String branch;
     private FetchType fetchType;
     private ParameterField<String> folderPath;
@@ -146,19 +144,19 @@ public class TerraformStepHelperTest extends CategoryTest {
 
   @Data
   @Builder
-  private static class artifactoryStoreConfig {
+  private static class ArtifactoryStoreConfig {
     private String repositoryPath;
     private String artifactoryName;
     private String version;
     private String connectorRef;
   }
 
-  private void generateConfigFileStore(
+  private void GenerateConfigFileStore(
       TerraformConfigFilesWrapper configFilesWrapper, StoreConfigType storeType, Object storeConfigFilesParam) {
     StoreConfig storeConfigFiles;
     switch (storeType) {
       case GIT:
-        gitStoreConfig gitStoreConfigFiles = (gitStoreConfig) storeConfigFilesParam;
+        GitStoreConfig gitStoreConfigFiles = (GitStoreConfig) storeConfigFilesParam;
         storeConfigFiles =
             GitStore.builder()
                 .branch(ParameterField.createValueField(gitStoreConfigFiles.branch))
@@ -171,7 +169,7 @@ public class TerraformStepHelperTest extends CategoryTest {
       case GITHUB:
       case GITLAB:
         // Create the store file for the terraform files
-        gitStoreConfig githubStoreConfigFiles = (gitStoreConfig) storeConfigFilesParam;
+        GitStoreConfig githubStoreConfigFiles = (GitStoreConfig) storeConfigFilesParam;
         storeConfigFiles =
             GithubStore.builder()
                 .branch(ParameterField.createValueField(githubStoreConfigFiles.branch))
@@ -183,7 +181,7 @@ public class TerraformStepHelperTest extends CategoryTest {
         break;
       case BITBUCKET:
         // Create the store file for the terraform files
-        gitStoreConfig bitbucketStoreConfigFiles = (gitStoreConfig) storeConfigFilesParam;
+        GitStoreConfig bitbucketStoreConfigFiles = (GitStoreConfig) storeConfigFilesParam;
         storeConfigFiles =
             BitbucketStore.builder()
                 .branch(ParameterField.createValueField(bitbucketStoreConfigFiles.branch))
@@ -195,9 +193,9 @@ public class TerraformStepHelperTest extends CategoryTest {
         break;
       case ARTIFACTORY:
         // Create the store file for the terraform files
-        artifactoryStoreConfig artifactoryStoreConfigFiles = (artifactoryStoreConfig) storeConfigFilesParam;
+        ArtifactoryStoreConfig artifactoryStoreConfigFiles = (ArtifactoryStoreConfig) storeConfigFilesParam;
         storeConfigFiles =
-            ArtifactoryStoreConfig.builder()
+            io.harness.cdng.manifest.yaml.ArtifactoryStoreConfig.builder()
                 .repositoryPath(ParameterField.createValueField(artifactoryStoreConfigFiles.repositoryPath))
                 .artifactName(ParameterField.createValueField(artifactoryStoreConfigFiles.artifactoryName))
                 .version(ParameterField.createValueField(artifactoryStoreConfigFiles.version))
@@ -210,7 +208,7 @@ public class TerraformStepHelperTest extends CategoryTest {
     }
   }
 
-  private RemoteTerraformVarFileSpec generateRemoteVarFileSpec(
+  private RemoteTerraformVarFileSpec GenerateRemoteVarFileSpec(
       StoreConfigType storeType, Object varStoreConfigFilesParam) {
     if (storeType == null) {
       return null;
@@ -219,7 +217,7 @@ public class TerraformStepHelperTest extends CategoryTest {
     RemoteTerraformVarFileSpec remoteTerraformVarFileSpec = new RemoteTerraformVarFileSpec();
     switch (storeType) {
       case GITLAB:
-        gitStoreConfig gitlabStoreVarFiles = (gitStoreConfig) varStoreConfigFilesParam;
+        GitStoreConfig gitlabStoreVarFiles = (GitStoreConfig) varStoreConfigFilesParam;
         storeVarFiles = GitLabStore.builder()
                             .branch(ParameterField.createValueField(gitlabStoreVarFiles.branch))
                             .gitFetchType(gitlabStoreVarFiles.fetchType)
@@ -230,7 +228,7 @@ public class TerraformStepHelperTest extends CategoryTest {
         remoteTerraformVarFileSpec.setStore(StoreConfigWrapper.builder().spec(storeVarFiles).type(storeType).build());
         break;
       case GIT:
-        gitStoreConfig gitStoreVarFiles = (gitStoreConfig) varStoreConfigFilesParam;
+        GitStoreConfig gitStoreVarFiles = (GitStoreConfig) varStoreConfigFilesParam;
         storeVarFiles = GitStore.builder()
                             .branch(ParameterField.createValueField(gitStoreVarFiles.branch))
                             .gitFetchType(gitStoreVarFiles.fetchType)
@@ -243,7 +241,7 @@ public class TerraformStepHelperTest extends CategoryTest {
       case GITHUB:
       case BITBUCKET:
         // Create the store file for the terraform variables
-        gitStoreConfig githubStoreVarFiles = (gitStoreConfig) varStoreConfigFilesParam;
+        GitStoreConfig githubStoreVarFiles = (GitStoreConfig) varStoreConfigFilesParam;
         storeVarFiles = GithubStore.builder()
                             .branch(ParameterField.createValueField(githubStoreVarFiles.branch))
                             .gitFetchType(githubStoreVarFiles.fetchType)
@@ -255,8 +253,8 @@ public class TerraformStepHelperTest extends CategoryTest {
         break;
       case ARTIFACTORY:
         // Create the store file for the terraform variables
-        artifactoryStoreConfig artifactoryStoreVarFiles = (artifactoryStoreConfig) varStoreConfigFilesParam;
-        storeVarFiles = ArtifactoryStoreConfig.builder()
+        ArtifactoryStoreConfig artifactoryStoreVarFiles = (ArtifactoryStoreConfig) varStoreConfigFilesParam;
+        storeVarFiles = io.harness.cdng.manifest.yaml.ArtifactoryStoreConfig.builder()
                             .repositoryPath(ParameterField.createValueField(artifactoryStoreVarFiles.repositoryPath))
                             .artifactName(ParameterField.createValueField(artifactoryStoreVarFiles.artifactoryName))
                             .version(ParameterField.createValueField(artifactoryStoreVarFiles.version))
@@ -270,7 +268,7 @@ public class TerraformStepHelperTest extends CategoryTest {
     return remoteTerraformVarFileSpec;
   }
 
-  private LinkedHashMap<String, TerraformVarFile> generateVarFileSpecs(
+  private LinkedHashMap<String, TerraformVarFile> GenerateVarFileSpecs(
       RemoteTerraformVarFileSpec remoteTerraformVarFileSpecs, boolean includeInlineFiles) {
     InlineTerraformVarFileSpec inlineTerraformVarFileSpec = new InlineTerraformVarFileSpec();
     inlineTerraformVarFileSpec.setContent(ParameterField.createValueField("var-content"));
@@ -293,14 +291,14 @@ public class TerraformStepHelperTest extends CategoryTest {
     return varFilesMap;
   }
 
-  private TerraformPlanStepParameters generateStepPlan(StoreConfigType storeTypeForConfig,
+  private TerraformPlanStepParameters GenerateStepPlan(StoreConfigType storeTypeForConfig,
       StoreConfigType storeTypeForVar, Object storeConfigFilesParam, Object varStoreConfigFilesParam) {
     TerraformConfigFilesWrapper configFilesWrapper = new TerraformConfigFilesWrapper();
 
-    generateConfigFileStore(configFilesWrapper, storeTypeForConfig, storeConfigFilesParam);
+    GenerateConfigFileStore(configFilesWrapper, storeTypeForConfig, storeConfigFilesParam);
     RemoteTerraformVarFileSpec remoteVarFilesSpec =
-        generateRemoteVarFileSpec(storeTypeForVar, varStoreConfigFilesParam);
-    LinkedHashMap<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFilesSpec, true);
+        GenerateRemoteVarFileSpec(storeTypeForVar, varStoreConfigFilesParam);
+    LinkedHashMap<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFilesSpec, true);
     InlineTerraformBackendConfigSpec inlineTerraformBackendConfigSpec = new InlineTerraformBackendConfigSpec();
     inlineTerraformBackendConfigSpec.setContent(ParameterField.createValueField("back-content"));
     TerraformBackendConfig terraformBackendConfig = new TerraformBackendConfig();
@@ -323,14 +321,14 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testSaveTerraformInheritOutput() {
     Ambiance ambiance = getAmbiance();
-    gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
+    GitStoreConfig gitStoreConfigFiles = GitStoreConfig.builder()
                                              .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("terraform"))
                                              .build();
     TerraformPlanStepParameters planStepParameters =
-        generateStepPlan(StoreConfigType.GITHUB, null, gitStoreConfigFiles, null);
+        GenerateStepPlan(StoreConfigType.GITHUB, null, gitStoreConfigFiles, null);
     TerraformTaskNGResponse response =
         TerraformTaskNGResponse.builder()
             .commitIdForConfigFilesMap(ImmutableMap.of(TerraformStepHelper.TF_CONFIG_FILES, "commit-1"))
@@ -343,7 +341,7 @@ public class TerraformStepHelperTest extends CategoryTest {
     verify(mockExecutionSweepingOutputService).consume(any(), anyString(), captor.capture(), anyString());
     TerraformInheritOutput output = captor.getValue();
     assertThat(output).isNotNull();
-    GitStoreConfig configFiles = output.getConfigFiles();
+    io.harness.cdng.manifest.yaml.GitStoreConfig configFiles = output.getConfigFiles();
     assertThat(configFiles).isNotNull();
     assertThat(configFiles.getGitFetchType()).isEqualTo(FetchType.COMMIT);
     String commitId = ParameterFieldHelper.getParameterFieldValue(configFiles.getCommitId());
@@ -364,14 +362,14 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testSaveRollbackDestroyConfigInline() {
     Ambiance ambiance = getAmbiance();
-    gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
+    GitStoreConfig gitStoreConfigFiles = GitStoreConfig.builder()
                                              .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("ConnectorRef"))
                                              .build();
-    gitStoreConfig gitStoreVarFiles =
-        gitStoreConfig.builder()
+    GitStoreConfig gitStoreVarFiles =
+        GitStoreConfig.builder()
             .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
@@ -379,9 +377,9 @@ public class TerraformStepHelperTest extends CategoryTest {
             .connectoref(ParameterField.createValueField("ConnectorRef"))
             .build();
     TerraformConfigFilesWrapper configFilesWrapper = new TerraformConfigFilesWrapper();
-    generateConfigFileStore(configFilesWrapper, StoreConfigType.GITHUB, gitStoreConfigFiles);
-    RemoteTerraformVarFileSpec remoteVarFiles = generateRemoteVarFileSpec(StoreConfigType.GITLAB, gitStoreVarFiles);
-    LinkedHashMap<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, false);
+    GenerateConfigFileStore(configFilesWrapper, StoreConfigType.GITHUB, gitStoreConfigFiles);
+    RemoteTerraformVarFileSpec remoteVarFiles = GenerateRemoteVarFileSpec(StoreConfigType.GITLAB, gitStoreVarFiles);
+    LinkedHashMap<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, false);
     TerraformApplyStepParameters parameters = TerraformApplyStepParameters.infoBuilder()
                                                   .provisionerIdentifier(ParameterField.createValueField("provId_$"))
                                                   .configuration(TerraformStepConfigurationParameters.builder()
@@ -428,16 +426,16 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testToTerraformVarFileInfoWithGitStore() {
     Ambiance ambiance = getAmbiance();
-    gitStoreConfig gitStoreVarFiles =
-        gitStoreConfig.builder()
+    GitStoreConfig gitStoreVarFiles =
+        GitStoreConfig.builder()
             .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
             .connectoref(ParameterField.createValueField("ConnectorRef"))
             .build();
-    RemoteTerraformVarFileSpec remoteVarFiles = generateRemoteVarFileSpec(StoreConfigType.GIT, gitStoreVarFiles);
-    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+    RemoteTerraformVarFileSpec remoteVarFiles = GenerateRemoteVarFileSpec(StoreConfigType.GIT, gitStoreVarFiles);
+    Map<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, true);
     doReturn(
         ConnectorInfoDTO.builder().connectorConfig(GitConfigDTO.builder().gitAuthType(GitAuthType.SSH).build()).build())
         .when(mockK8sStepHelper)
@@ -471,7 +469,7 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testToTerraformVarFileInfoWithArtifactoryStore() {
     Ambiance ambiance = getAmbiance();
-    artifactoryStoreConfig artifactoryStoreVarFiles = artifactoryStoreConfig.builder()
+    ArtifactoryStoreConfig artifactoryStoreVarFiles = ArtifactoryStoreConfig.builder()
                                                           .artifactoryName("ArtifactoryName")
                                                           .repositoryPath("RepositoryPath")
                                                           .version("Version")
@@ -479,8 +477,8 @@ public class TerraformStepHelperTest extends CategoryTest {
                                                           .build();
 
     RemoteTerraformVarFileSpec remoteVarFiles =
-        generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFiles);
-    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+        GenerateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFiles);
+    Map<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, true);
     // Create auth with user and password
     char[] password = {'r', 's', 't', 'u', 'v'};
     ArtifactoryAuthenticationDTO artifactoryAuthenticationDTO =
@@ -530,20 +528,20 @@ public class TerraformStepHelperTest extends CategoryTest {
     Ambiance ambiance = getAmbiance();
 
     // Create 3 var files with different stores at the same time
-    artifactoryStoreConfig artifactoryStoreVarFilesA = artifactoryStoreConfig.builder()
+    ArtifactoryStoreConfig artifactoryStoreVarFilesA = ArtifactoryStoreConfig.builder()
                                                            .artifactoryName("ArtifactoryName")
                                                            .repositoryPath("RepositoryPath")
                                                            .version("Version")
                                                            .connectorRef("ConnectorRef")
                                                            .build();
-    artifactoryStoreConfig artifactoryStoreVarFilesB = artifactoryStoreConfig.builder()
+    ArtifactoryStoreConfig artifactoryStoreVarFilesB = ArtifactoryStoreConfig.builder()
                                                            .artifactoryName("ArtifactoryName2")
                                                            .repositoryPath("RepositoryPath2")
                                                            .version("Version2")
                                                            .connectorRef("ConnectorRef")
                                                            .build();
-    gitStoreConfig gitStoreVarFiles =
-        gitStoreConfig.builder()
+    GitStoreConfig gitStoreVarFiles =
+        GitStoreConfig.builder()
             .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
@@ -552,21 +550,21 @@ public class TerraformStepHelperTest extends CategoryTest {
             .build();
 
     RemoteTerraformVarFileSpec remoteVarFiles =
-        generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFilesA);
-    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+        GenerateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFilesA);
+    Map<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, true);
     // Add the second file with different artifactory values but same connectorRef
     varFilesMap.put("var-file-3",
         TerraformVarFile.builder()
             .identifier("var-file-3")
             .type("Remote")
-            .spec(generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFilesB))
+            .spec(GenerateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFilesB))
             .build());
     // Add another var file with a different connector. This one is a github connector
     varFilesMap.put("var-file-4",
         TerraformVarFile.builder()
             .identifier("var-file-4")
             .type("Remote")
-            .spec(generateRemoteVarFileSpec(StoreConfigType.GITHUB, gitStoreVarFiles))
+            .spec(GenerateRemoteVarFileSpec(StoreConfigType.GITHUB, gitStoreVarFiles))
             .build());
     // Create base auth for the artifactory connector
     char[] password = {'r', 's', 't', 'u', 'v'};
@@ -730,7 +728,7 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testPrepareTerraformVarFileInfoWithFileStore() {
     Ambiance ambiance = getAmbiance();
-    artifactoryStoreConfig artifactoryStoreVarFiles = artifactoryStoreConfig.builder()
+    ArtifactoryStoreConfig artifactoryStoreVarFiles = ArtifactoryStoreConfig.builder()
                                                           .artifactoryName("ArtifactoryName")
                                                           .repositoryPath("RepositoryPath")
                                                           .version("Version")
@@ -738,8 +736,8 @@ public class TerraformStepHelperTest extends CategoryTest {
                                                           .build();
 
     RemoteTerraformVarFileSpec remoteVarFiles =
-        generateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFiles);
-    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+        GenerateRemoteVarFileSpec(StoreConfigType.ARTIFACTORY, artifactoryStoreVarFiles);
+    Map<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, true);
     // Create auth with user and password
     char[] password = {'r', 's', 't', 'u', 'v'};
     ArtifactoryAuthenticationDTO artifactoryAuthenticationDTO =
@@ -861,16 +859,16 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Owner(developers = NAMAN_TALAYCHA)
   @Category(UnitTests.class)
   public void testPrepareEntityDetailsForVarFiles() {
-    gitStoreConfig gitStoreVarFiles =
-        gitStoreConfig.builder()
+    GitStoreConfig gitStoreVarFiles =
+        GitStoreConfig.builder()
             .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
             .varFolderPath(ParameterField.createValueField(Collections.singletonList("VarFiles/")))
             .connectoref(ParameterField.createValueField("ConnectorRef"))
             .build();
-    RemoteTerraformVarFileSpec remoteVarFiles = generateRemoteVarFileSpec(StoreConfigType.GITLAB, gitStoreVarFiles);
-    Map<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, true);
+    RemoteTerraformVarFileSpec remoteVarFiles = GenerateRemoteVarFileSpec(StoreConfigType.GITLAB, gitStoreVarFiles);
+    Map<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, true);
     List<EntityDetail> entityDetails =
         helper.prepareEntityDetailsForVarFiles("test-account", "test-org", "test-project", varFilesMap);
     // NULL CASES
@@ -1199,14 +1197,14 @@ public class TerraformStepHelperTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testSaveRollbackDestroyConfigInlineOtherStore() {
     Ambiance ambiance = getAmbiance();
-    gitStoreConfig gitStoreConfigFiles = gitStoreConfig.builder()
+    GitStoreConfig gitStoreConfigFiles = GitStoreConfig.builder()
                                              .branch("master")
                                              .fetchType(FetchType.BRANCH)
                                              .folderPath(ParameterField.createValueField("Config/"))
                                              .connectoref(ParameterField.createValueField("ConnectorRef"))
                                              .build();
-    gitStoreConfig gitStoreVarFiles =
-        gitStoreConfig.builder()
+    GitStoreConfig gitStoreVarFiles =
+        GitStoreConfig.builder()
             .branch("master")
             .fetchType(FetchType.BRANCH)
             .folderPath(ParameterField.createValueField("VarFiles/"))
@@ -1214,9 +1212,9 @@ public class TerraformStepHelperTest extends CategoryTest {
             .connectoref(ParameterField.createValueField("ConnectorRef"))
             .build();
     TerraformConfigFilesWrapper configFilesWrapper = new TerraformConfigFilesWrapper();
-    generateConfigFileStore(configFilesWrapper, StoreConfigType.BITBUCKET, gitStoreConfigFiles);
-    RemoteTerraformVarFileSpec remoteVarFiles = generateRemoteVarFileSpec(StoreConfigType.GIT, gitStoreVarFiles);
-    LinkedHashMap<String, TerraformVarFile> varFilesMap = generateVarFileSpecs(remoteVarFiles, false);
+    GenerateConfigFileStore(configFilesWrapper, StoreConfigType.BITBUCKET, gitStoreConfigFiles);
+    RemoteTerraformVarFileSpec remoteVarFiles = GenerateRemoteVarFileSpec(StoreConfigType.GIT, gitStoreVarFiles);
+    LinkedHashMap<String, TerraformVarFile> varFilesMap = GenerateVarFileSpecs(remoteVarFiles, false);
 
     TerraformApplyStepParameters parameters = TerraformApplyStepParameters.infoBuilder()
                                                   .provisionerIdentifier(ParameterField.createValueField("provId_$"))

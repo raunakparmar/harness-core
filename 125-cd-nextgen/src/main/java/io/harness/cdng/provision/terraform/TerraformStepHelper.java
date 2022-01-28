@@ -165,15 +165,10 @@ public class TerraformStepHelper {
   }
 
   public GitFetchFilesConfig getGitFetchFilesConfig(StoreConfig store, Ambiance ambiance, String identifier) {
-    if (store == null) {
+    if (store == null || !ManifestStoreType.isInGitSubset(store.getKind())) {
       return null;
     }
-    GitStoreConfig gitStoreConfig;
-    try {
-      gitStoreConfig = (GitStoreConfig) store;
-    } catch (ClassCastException e) {
-      return null;
-    }
+    GitStoreConfig gitStoreConfig = (GitStoreConfig) store;
     validateGitStoreConfig(gitStoreConfig);
     String connectorId = gitStoreConfig.getConnectorRef().getValue();
     ConnectorInfoDTO connectorDTO = k8sStepHelper.getConnector(connectorId, ambiance);
@@ -224,15 +219,10 @@ public class TerraformStepHelper {
 
   public FileStoreFetchFilesConfig getFileFactoryFetchFilesConfig(
       StoreConfig store, Ambiance ambiance, String identifier) {
-    if (store == null) {
+    if (store == null || !ManifestStoreType.ARTIFACTORY.equals(store.getKind())) {
       return null;
     }
-    ArtifactoryStoreConfig artifactoryStoreConfig;
-    try {
-      artifactoryStoreConfig = (ArtifactoryStoreConfig) store;
-    } catch (ClassCastException e) {
-      return null;
-    }
+    ArtifactoryStoreConfig artifactoryStoreConfig = (ArtifactoryStoreConfig) store;
     validateArtifactoryStoreConfig(artifactoryStoreConfig);
     String connectorId = artifactoryStoreConfig.getConnectorRef().getValue();
     ConnectorInfoDTO connectorDTO = k8sStepHelper.getConnector(connectorId, ambiance);
@@ -252,7 +242,7 @@ public class TerraformStepHelper {
         .repositoryPath(artifactoryStoreConfig.getRepositoryPath().getValue())
         .version(artifactoryStoreConfig.getVersion().getValue())
         .identifier(identifier)
-        .manifestType(store.getKind())
+        .manifestStoreType(store.getKind())
         .connectorDTO(connectorDTO)
         .encryptedDataDetails(encryptedDataDetails)
         .succeedIfFileNotFound(false)

@@ -7,7 +7,7 @@
 
 package io.harness.cdng.manifest.yaml;
 
-import static io.harness.annotations.dev.HarnessTeam.CDC;
+import static io.harness.annotations.dev.HarnessTeam.CDP;
 
 import io.harness.annotation.RecasterAlias;
 import io.harness.annotations.dev.OwnedBy;
@@ -32,7 +32,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Wither;
 import org.springframework.data.annotation.TypeAlias;
 
-@OwnedBy(CDC)
+@OwnedBy(CDP)
 @Data
 @Builder
 @EqualsAndHashCode(callSuper = false)
@@ -40,7 +40,6 @@ import org.springframework.data.annotation.TypeAlias;
 @SimpleVisitorHelper(helperClass = ConnectorRefExtractorHelper.class)
 @TypeAlias("artifactoryStore")
 @RecasterAlias("io.harness.cdng.manifest.yaml.ArtifactoryStore")
-
 public class ArtifactoryStoreConfig implements StoreConfig, Visitable, WithConnectorRef {
   @NotNull
   @Wither

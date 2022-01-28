@@ -43,7 +43,6 @@ public interface ManifestStoreType {
       case HTTP:
       case S3:
       case GCS:
-      case ARTIFACTORY:
         return true;
 
       default:
@@ -52,5 +51,5 @@ public interface ManifestStoreType {
   }
 
   Set<String> HelmChartRepo = ImmutableSet.of(HTTP, GCS, S3);
-  Set<String> HelmAllRepo = ImmutableSet.of(HTTP, GCS, S3, GIT, GITLAB, BITBUCKET, ARTIFACTORY);
+  Set<String> HelmAllRepo = ImmutableSet.of(HTTP, GCS, S3, GIT, GITHUB, GITLAB, BITBUCKET);
 }
