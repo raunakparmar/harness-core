@@ -337,7 +337,7 @@ public class TerraformPlanStepTest extends CategoryTest {
   }
 
   @Test
-  @Owner(developers = NAMAN_TALAYCHA)
+  @Owner(developers = NGONZALEZ)
   @Category(UnitTests.class)
   public void testObtainTaskAfterRbacWithArtifactoryStore() {
     Ambiance ambiance = getAmbiance();
