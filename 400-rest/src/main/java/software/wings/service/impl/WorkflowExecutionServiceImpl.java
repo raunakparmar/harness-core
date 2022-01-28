@@ -3080,13 +3080,15 @@ public class WorkflowExecutionServiceImpl implements WorkflowExecutionService {
     // Doing this check here so that workflow is already fetched from database.
     preDeploymentChecks.checkIfWorkflowUsingRestrictedFeatures(workflow);
 
-    PreDeploymentChecker deploymentFreezeChecker = new DeploymentFreezeChecker(governanceConfigService,
-        new DeploymentCtx(appId, Collections.singletonList(envId), getWorkflowServiceIds(workflow)), environmentService,
-        featureFlagService);
-    User user = UserThreadLocal.get();
-    boolean canOverrideFreeze = user != null && checkIfOverrideFreeze();
-    if (!canOverrideFreeze) {
-      deploymentFreezeChecker.check(accountId);
+    if (!featureFlagService.isEnabled(FeatureName.POST_PROD_DURING_FREEZE, accountId)) {
+      PreDeploymentChecker deploymentFreezeChecker = new DeploymentFreezeChecker(governanceConfigService,
+          new DeploymentCtx(appId, Collections.singletonList(envId), getWorkflowServiceIds(workflow)),
+          environmentService, featureFlagService);
+      User user = UserThreadLocal.get();
+      boolean canOverrideFreeze = user != null && checkIfOverrideFreeze();
+      if (!canOverrideFreeze) {
+        deploymentFreezeChecker.check(accountId);
+      }
     }
 
     // Not including instance limit and deployment limit check as it is a emergency rollback
