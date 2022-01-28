@@ -13,7 +13,6 @@ import static io.harness.expression.Expression.ALLOW_SECRETS;
 import static io.harness.expression.Expression.DISALLOW_SECRETS;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.cdng.manifest.ManifestStoreType;
 import io.harness.delegate.beans.connector.artifactoryconnector.ArtifactoryCapabilityHelper;
 import io.harness.delegate.beans.connector.scm.genericgitconnector.GitConfigDTO;
 import io.harness.delegate.beans.executioncapability.ExecutionCapability;
@@ -122,7 +121,7 @@ public class TerraformTaskNGParameters
               ((RemoteTerraformVarFileInfo) varFileInfo).getFilestoreFetchFilesConfig();
           if (fileFactoryFetchFilesConfig != null) {
             switch (fileFactoryFetchFilesConfig.getManifestStoreType()) {
-              case ManifestStoreType.ARTIFACTORY:
+              case "Artifactory":
                 capabilities.addAll(ArtifactoryCapabilityHelper.fetchRequiredExecutionCapabilities(
                     fileFactoryFetchFilesConfig.getConnectorDTO().getConnectorConfig(), maskingEvaluator));
                 log.info("Adding Required Execution Capabilities for ArtifactoryStores");
