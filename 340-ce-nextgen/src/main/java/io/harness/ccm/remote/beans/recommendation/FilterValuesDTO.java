@@ -12,9 +12,11 @@ import io.harness.ccm.graphql.dto.recommendation.K8sRecommendationFilterDTO;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 @JsonIgnoreProperties
 @Schema(name = "FilterValues",
     description = "The applicable 'columns' values are 'name', 'resourceType', 'namespace', 'clusterName'")

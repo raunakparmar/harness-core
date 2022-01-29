@@ -176,7 +176,7 @@ public class RESTWrapperRecommendationOverview {
 
     K8sRecommendationFilterDTO filter =
         firstNonNull(filterValues.getFilter(), K8sRecommendationFilterDTO.builder().build());
-    GraphQLToRESTHelper.setDefaultPaginatedFilterValues(filter);
+    GraphQLToRESTHelper.setDefaultFilterValues(filter);
     final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(accountId);
 
     return ResponseDTO.newResponse(overviewQueryV2.recommendationFilterStats(filterValues.getColumns(), filter, env));
