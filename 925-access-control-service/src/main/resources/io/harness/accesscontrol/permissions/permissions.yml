@@ -733,6 +733,7 @@ permissions:
     name: Sync a Gitops Application
     status: STAGING
     includeInAllRoles: false
+    allowedScopeLevels:
       - project
   - identifier: gitops_application_override
     name: Override a Gitops Application
