@@ -1,6 +1,7 @@
 package io.harness.resourcegroup.resourceclient.gitops;
 
 import static io.harness.rule.OwnerRule.YOGESH;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
