@@ -52,6 +52,7 @@ public class CIExecutionConstants {
   public static final Integer PORT_STARTING_RANGE = 20002;
   public static final Integer LITE_ENGINE_PORT = 20001;
   public static final String PLUGIN_ENV_PREFIX = "PLUGIN_";
+  public static final String SECURITY_ENV_PREFIX = "SECURITY_";
 
   public static final String LOCALHOST_IP = "127.0.0.1";
   public static final String SERVICE_PREFIX = "service-";
@@ -104,6 +105,7 @@ public class CIExecutionConstants {
   public static final String HARNESS_ORG_ID_VARIABLE = "HARNESS_ORG_ID";
   public static final String HARNESS_BUILD_ID_VARIABLE = "HARNESS_BUILD_ID";
   public static final String HARNESS_STAGE_ID_VARIABLE = "HARNESS_STAGE_ID";
+  public static final String HARNESS_STEP_ID_VARIABLE = "HARNESS_STEP_ID";
   public static final String HARNESS_LOG_PREFIX_VARIABLE = "HARNESS_LOG_PREFIX";
   public static final String HARNESS_SERVICE_LOG_KEY_VARIABLE = "HARNESS_SERVICE_LOG_KEY";
   public static final String HARNESS_PIPELINE_ID_VARIABLE = "HARNESS_PIPELINE_ID";
