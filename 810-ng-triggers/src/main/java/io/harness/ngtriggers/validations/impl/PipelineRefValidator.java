@@ -154,21 +154,6 @@ public class PipelineRefValidator implements TriggerValidator {
 
     triggerConfig.getFqnToValueMap().keySet().forEach(key -> {
       if (pipelineFQNs.contains(key)) {
-        Object templateValue = triggerConfig.getFqnToValueMap().get(key);
-        Object value = templateConfig.getFqnToValueMap().get(key);
-        if (key.isType() || key.isIdentifierOrVariableName()) {
-          if (!value.toString().equals(templateValue.toString())) {
-            errorMap.put(key,
-                "The value for " + key.getExpressionFqn() + " is " + templateValue.toString()
-                    + "in the trigger yaml, but the pipeline has it as " + value.toString());
-          }
-        } else {
-          String error = validateStaticValues(templateValue, value);
-          if (EmptyPredicate.isNotEmpty(error)) {
-            errorMap.put(key, error);
-          }
-        }
-
         pipelineFQNs.remove(key);
       } else {
         Map<FQN, Object> subMap = YamlSubMapExtractor.getFQNToObjectSubMap(templateConfig.getFqnToValueMap(), key);
