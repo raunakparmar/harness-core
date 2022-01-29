@@ -111,12 +111,4 @@ public class ClusterResourceImplTest {
       }
     }
   }
-
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void getSelectorKind() {
-    assertThat(clusterResource.getSelectorKind())
-        .containsExactlyInAnyOrder(ValidatorType.DYNAMIC, ValidatorType.STATIC);
-  }
 }

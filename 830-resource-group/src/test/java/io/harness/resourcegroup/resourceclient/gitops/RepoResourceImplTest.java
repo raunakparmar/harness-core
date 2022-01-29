@@ -1,7 +1,6 @@
 package io.harness.resourcegroup.resourceclient.gitops;
 
 import static io.harness.rule.OwnerRule.YOGESH;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Matchers.any;
@@ -18,7 +17,6 @@ import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.gitops.models.Repository;
 import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.ng.beans.PageResponse;
-import io.harness.resourcegroup.beans.ValidatorType;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
@@ -111,13 +109,5 @@ public class RepoResourceImplTest extends CategoryTest {
         fail("repositories > 30 should be valid");
       }
     }
-  }
-
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void getSelectorKind() {
-    assertThat(repositoryResource.getSelectorKind())
-        .containsExactlyInAnyOrder(ValidatorType.DYNAMIC, ValidatorType.STATIC);
   }
 }

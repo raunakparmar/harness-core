@@ -116,10 +116,4 @@ public class AgentResourceImplTest extends CategoryTest {
     }
   }
 
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void getSelectorKind() {
-    assertThat(agentResource.getSelectorKind()).containsExactlyInAnyOrder(ValidatorType.DYNAMIC, ValidatorType.STATIC);
-  }
 }
