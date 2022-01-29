@@ -232,7 +232,7 @@ public class DeleteAccountHelper {
     deletePerpetualTasksForAccount(accountId);
     delegateService.deleteByAccountId(accountId);
     List<String> entitiesRemainingForDeletion = deleteAllEntities(accountId);
-    delegateNgTokenService.revokeDelegateToken(accountId, null, DelegateNgTokenService.DEFAULT_TOKEN_NAME);
+    delegateNgTokenService.deleteByAccountId(accountId);
     if (isEmpty(entitiesRemainingForDeletion)) {
       log.info("Deleting account entry {}", accountId);
       hPersistence.delete(Account.class, accountId);

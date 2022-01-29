@@ -69,7 +69,6 @@ import io.harness.datahandler.models.AccountDetails;
 import io.harness.dataretention.AccountDataRetentionEntity;
 import io.harness.dataretention.AccountDataRetentionService;
 import io.harness.delegate.beans.DelegateConfiguration;
-import io.harness.delegate.service.intfc.DelegateNgTokenService;
 import io.harness.delegate.utils.DelegateRingConstants;
 import io.harness.eraro.Level;
 import io.harness.event.handler.impl.EventPublishHelper;
@@ -298,7 +297,6 @@ public class AccountServiceImpl implements AccountService {
   @Inject private DelegateService delegateService;
   @Inject @Named(EventsFrameworkConstants.ENTITY_CRUD) private Producer eventProducer;
   @Inject private RemoteObserverInformer remoteObserverInformer;
-  @Inject private DelegateNgTokenService delegateNgTokenService;
   @Inject private HPersistence persistence;
 
   @Inject @Named("BackgroundJobScheduler") private PersistentScheduler jobScheduler;
@@ -1163,7 +1161,6 @@ public class AccountServiceImpl implements AccountService {
     updateMigratedToClusterUrl(account, migratedToClusterUrl);
     // Also need to prevent all existing users in the migration account from logging in after completion of migration.
     setUserStatusInAccount(accountId, false);
-    delegateNgTokenService.revokeDelegateToken(accountId, null, delegateNgTokenService.DEFAULT_TOKEN_NAME);
     return setAccountStatusInternal(account, AccountStatus.INACTIVE);
   }
 

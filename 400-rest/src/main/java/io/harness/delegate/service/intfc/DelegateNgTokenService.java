@@ -11,10 +11,12 @@ import io.harness.delegate.beans.DelegateEntityOwner;
 import io.harness.delegate.beans.DelegateTokenDetails;
 import io.harness.delegate.beans.DelegateTokenStatus;
 
+import software.wings.service.intfc.ownership.OwnedByAccount;
+
 import java.util.List;
 
-public interface DelegateNgTokenService {
-  String DEFAULT_TOKEN_NAME = "Default";
+public interface DelegateNgTokenService extends OwnedByAccount {
+  String getDefaultTokenName(DelegateEntityOwner owner);
 
   DelegateTokenDetails createToken(String accountId, DelegateEntityOwner owner, String name);
 
@@ -22,9 +24,9 @@ public interface DelegateNgTokenService {
 
   List<DelegateTokenDetails> getDelegateTokens(String accountId, DelegateEntityOwner owner, DelegateTokenStatus status);
 
-  DelegateTokenDetails getDelegateToken(String accountId, DelegateEntityOwner owner, String name);
+  DelegateTokenDetails getDelegateToken(String accountId, String name);
 
-  String getDelegateTokenValue(String accountId, DelegateEntityOwner owner, String name);
+  String getDelegateTokenValue(String accountId, String name);
 
   DelegateTokenDetails upsertDefaultToken(String accountIdentifier, DelegateEntityOwner owner, boolean skipIfExists);
 }

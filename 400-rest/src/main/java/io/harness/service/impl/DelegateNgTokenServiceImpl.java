@@ -48,6 +48,7 @@ import org.mongodb.morphia.query.UpdateOperations;
 @ValidateOnExecution
 @OwnedBy(HarnessTeam.DEL)
 public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, AccountCrudObserver {
+  private static final String DEFAULT_TOKEN_NAME = "default_ng";
   private final HPersistence persistence;
   private final OutboxService outboxService;
 
@@ -59,7 +60,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
 
   @Override
   public DelegateTokenDetails createToken(String accountId, DelegateEntityOwner owner, String name) {
-    if (!matchNameTokenQuery(accountId, owner, name).asList().isEmpty()) {
+    if (!matchNameTokenQuery(accountId, name).asList().isEmpty()) {
       throw new InvalidRequestException("Token with given name already exists for given account.");
     }
 
@@ -67,6 +68,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
                                       .accountId(accountId)
                                       .owner(owner)
                                       .name(name)
+                                      .isNg(true)
                                       .status(DelegateTokenStatus.ACTIVE)
                                       .value(encodeBase64(Misc.generateSecretKey()))
                                       .build();
@@ -78,7 +80,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
 
   @Override
   public DelegateTokenDetails revokeDelegateToken(String accountId, DelegateEntityOwner owner, String tokenName) {
-    Query<DelegateToken> filterQuery = matchNameTokenQuery(accountId, owner, tokenName);
+    Query<DelegateToken> filterQuery = matchNameTokenQuery(accountId, tokenName);
     validateTokenToBeRevoked(filterQuery.get());
     UpdateOperations<DelegateToken> updateOperations =
         persistence.createUpdateOperations(DelegateToken.class)
@@ -105,8 +107,8 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
   }
 
   @Override
-  public DelegateTokenDetails getDelegateToken(String accountId, DelegateEntityOwner owner, String name) {
-    return matchNameTokenQuery(accountId, owner, name)
+  public DelegateTokenDetails getDelegateToken(String accountId, String name) {
+    return matchNameTokenQuery(accountId, name)
         .asList()
         .stream()
         .map(token -> getDelegateTokenDetails(token, false))
@@ -115,21 +117,16 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
   }
 
   @Override
-  public String getDelegateTokenValue(String accountId, DelegateEntityOwner owner, String name) {
-    DelegateTokenDetails delegateTokenDetails = matchNameTokenQuery(accountId, owner, name)
-                                                    .asList()
-                                                    .stream()
-                                                    .map(token -> getDelegateTokenDetails(token, true))
-                                                    .findFirst()
-                                                    .orElse(null);
-    return delegateTokenDetails != null ? decodeBase64ToString(delegateTokenDetails.getValue()) : null;
+  public String getDelegateTokenValue(String accountId, String name) {
+    DelegateToken delegateToken = matchNameTokenQuery(accountId, name).get();
+    return delegateToken != null ? decodeBase64ToString(delegateToken.getValue()) : null;
   }
 
   @Override
   public DelegateTokenDetails upsertDefaultToken(String accountId, DelegateEntityOwner owner, boolean skipIfExists) {
     Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
                                      .filter(DelegateTokenKeys.accountId, accountId)
-                                     .filter(DelegateTokenKeys.name, DEFAULT_TOKEN_NAME);
+                                     .filter(DelegateTokenKeys.name, getDefaultTokenName(owner));
 
     if (owner != null) {
       query = query.filter(DelegateTokenKeys.owner, owner);
@@ -147,7 +144,7 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
         persistence.createUpdateOperations(DelegateToken.class)
             .setOnInsert(DelegateTokenKeys.uuid, UUIDGenerator.generateUuid())
             .setOnInsert(DelegateTokenKeys.accountId, accountId)
-            .set(DelegateTokenKeys.name, DEFAULT_TOKEN_NAME)
+            .set(DelegateTokenKeys.name, getDefaultTokenName(owner))
             .set(DelegateTokenKeys.status, DelegateTokenStatus.ACTIVE)
             .set(DelegateTokenKeys.value, encodeBase64(Misc.generateSecretKey()));
 
@@ -156,8 +153,6 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
         extractOrganization(owner), extractProject(owner));
     return getDelegateTokenDetails(delegateToken, true);
   }
-
-  // TODO: Arpit onAccountDeleted
 
   @Override
   public void onAccountCreated(Account account) {
@@ -169,16 +164,27 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
     // do nothing
   }
 
-  private Query<DelegateToken> matchNameTokenQuery(String accountId, DelegateEntityOwner owner, String tokenName) {
-    Query<DelegateToken> query = persistence.createQuery(DelegateToken.class)
-                                     .field(DelegateTokenKeys.accountId)
-                                     .equal(accountId)
-                                     .field(DelegateTokenKeys.owner)
-                                     .equal(owner);
-    if (!StringUtils.isEmpty(tokenName)) {
-      query = query.field(DelegateTokenKeys.name).equal(tokenName);
+  @Override
+  public void deleteByAccountId(String accountId) {
+    try {
+      log.info("Deleting all delegate tokens for accountId {}", accountId);
+      persistence.delete(persistence.createQuery(DelegateToken.class).filter(DelegateTokenKeys.accountId, accountId));
+    } catch (Exception e) {
+      log.error("Error occurred during deleting all delegate tokens for accountId {}", accountId, e);
     }
-    return query;
+  }
+
+  @Override
+  public String getDefaultTokenName(DelegateEntityOwner owner) {
+    return owner == null ? DEFAULT_TOKEN_NAME : DEFAULT_TOKEN_NAME.concat("_" + owner);
+  }
+
+  private Query<DelegateToken> matchNameTokenQuery(String accountId, String tokenName) {
+    return persistence.createQuery(DelegateToken.class)
+        .field(DelegateTokenKeys.accountId)
+        .equal(accountId)
+        .field(DelegateTokenKeys.name)
+        .equal(tokenName);
   }
 
   private DelegateTokenDetails getDelegateTokenDetails(DelegateToken delegateToken, boolean includeTokenValue) {

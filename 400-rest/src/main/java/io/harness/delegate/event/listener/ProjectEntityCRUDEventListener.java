@@ -98,7 +98,7 @@ public class ProjectEntityCRUDEventListener implements MessageListener {
       final DelegateEntityOwner owner = DelegateEntityOwnerHelper.buildOwner(
           projectEntityChangeDTO.getOrgIdentifier(), projectEntityChangeDTO.getIdentifier());
       delegateNgTokenService.revokeDelegateToken(
-          projectEntityChangeDTO.getAccountIdentifier(), owner, DelegateNgTokenService.DEFAULT_TOKEN_NAME);
+          projectEntityChangeDTO.getAccountIdentifier(), owner, delegateNgTokenService.getDefaultTokenName(owner));
       log.info("Project {}/{} restored and new default Delegate Token generated.",
           projectEntityChangeDTO.getAccountIdentifier(), owner.getIdentifier());
       return true;

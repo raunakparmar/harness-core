@@ -97,9 +97,10 @@ public class OrganizationEntityCRUDEventListener implements MessageListener {
 
   private boolean handleDeleteEvent(final OrganizationEntityChangeDTO organizationEntityChangeDTO) {
     try {
-      delegateNgTokenService.revokeDelegateToken(organizationEntityChangeDTO.getAccountIdentifier(),
-          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), StringUtils.EMPTY),
-          DelegateNgTokenService.DEFAULT_TOKEN_NAME);
+      final DelegateEntityOwner owner =
+          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), StringUtils.EMPTY);
+      delegateNgTokenService.revokeDelegateToken(
+          organizationEntityChangeDTO.getAccountIdentifier(), owner, delegateNgTokenService.getDefaultTokenName(owner));
       log.info("Organization {}/{} deleted and default Delegate Token revoked.",
           organizationEntityChangeDTO.getAccountIdentifier(), organizationEntityChangeDTO.getIdentifier());
       return true;

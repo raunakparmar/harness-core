@@ -610,10 +610,8 @@ public class DelegateServiceImpl implements DelegateService {
     if (isBlank(delegateSetupDetails.getTokenName())) {
       throw new InvalidRequestException("Token name must be specified.", USER);
     }
-    DelegateTokenDetails delegateTokenDetails = delegateNgTokenService.getDelegateToken(accountId,
-        DelegateEntityOwnerHelper.buildOwner(
-            delegateSetupDetails.getOrgIdentifier(), delegateSetupDetails.getProjectIdentifier()),
-        delegateSetupDetails.getTokenName());
+    DelegateTokenDetails delegateTokenDetails =
+        delegateNgTokenService.getDelegateToken(accountId, delegateSetupDetails.getTokenName());
     if (delegateTokenDetails == null) {
       throw new InvalidRequestException("Provided token does not exist.", USER);
     }
@@ -1440,10 +1438,7 @@ public class DelegateServiceImpl implements DelegateService {
     final Account account = accountService.get(inquiry.getAccountId());
     if (isNotBlank(inquiry.getDelegateTokenName())) {
       if (useNgToken) {
-        return delegateNgTokenService.getDelegateTokenValue(inquiry.getAccountId(),
-            DelegateEntityOwnerHelper.buildOwner(
-                inquiry.getDelegateOrgIdentifier(), inquiry.getDelegateProjectIdentifier()),
-            inquiry.getDelegateTokenName());
+        return delegateNgTokenService.getDelegateTokenValue(inquiry.getAccountId(), inquiry.getDelegateTokenName());
       } else {
         return delegateTokenService.getTokenValue(inquiry.getAccountId(), inquiry.getDelegateTokenName());
       }
