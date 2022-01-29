@@ -17,7 +17,6 @@ import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.gitops.models.Cluster;
 import io.harness.gitops.remote.GitopsResourceClient;
 import io.harness.ng.beans.PageResponse;
-import io.harness.resourcegroup.beans.ValidatorType;
 import io.harness.rule.Owner;
 
 import com.google.inject.Inject;
