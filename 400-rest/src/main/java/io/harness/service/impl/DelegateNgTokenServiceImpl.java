@@ -146,7 +146,12 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
             .setOnInsert(DelegateTokenKeys.accountId, accountId)
             .set(DelegateTokenKeys.name, getDefaultTokenName(owner))
             .set(DelegateTokenKeys.status, DelegateTokenStatus.ACTIVE)
+            .set(DelegateTokenKeys.isNg, true)
             .set(DelegateTokenKeys.value, encodeBase64(Misc.generateSecretKey()));
+
+    if (owner != null) {
+      updateOperations.set(DelegateTokenKeys.owner, owner);
+    }
 
     DelegateToken delegateToken = persistence.upsert(query, updateOperations, HPersistence.upsertReturnNewOptions);
     log.info("Default Delegate NG Token inserted/updated for account {}, organization {} and project {}", accountId,
@@ -175,8 +180,22 @@ public class DelegateNgTokenServiceImpl implements DelegateNgTokenService, Accou
   }
 
   @Override
+  public void deleteAllTokensOwnedByOrgAndProject(String accountId, DelegateEntityOwner owner) {
+    try {
+      log.info("Deleting all delegate tokens for accountId {} , org {} and project {}", accountId,
+          extractOrganization(owner), extractProject(owner));
+      persistence.delete(persistence.createQuery(DelegateToken.class)
+                             .filter(DelegateTokenKeys.accountId, accountId)
+                             .filter(DelegateTokenKeys.owner, owner));
+    } catch (Exception e) {
+      log.error("Error occurred during deleting all delegate tokens for accountId {} , org {} and project {}",
+          accountId, extractOrganization(owner), extractProject(owner), e);
+    }
+  }
+
+  @Override
   public String getDefaultTokenName(DelegateEntityOwner owner) {
-    return owner == null ? DEFAULT_TOKEN_NAME : DEFAULT_TOKEN_NAME.concat("_" + owner);
+    return owner == null ? DEFAULT_TOKEN_NAME : DEFAULT_TOKEN_NAME.concat("_" + owner.getIdentifier());
   }
 
   private Query<DelegateToken> matchNameTokenQuery(String accountId, String tokenName) {

@@ -82,7 +82,7 @@ public class OrganizationEntityCRUDEventListener implements MessageListener {
   private boolean handleCreateEvent(final OrganizationEntityChangeDTO organizationEntityChangeDTO) {
     try {
       final DelegateEntityOwner owner =
-          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), StringUtils.EMPTY);
+          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), null);
       delegateNgTokenService.upsertDefaultToken(organizationEntityChangeDTO.getAccountIdentifier(), owner, false);
       log.info("Default Delegate Token created for organization {}/{}.",
           organizationEntityChangeDTO.getAccountIdentifier(),
@@ -98,14 +98,14 @@ public class OrganizationEntityCRUDEventListener implements MessageListener {
   private boolean handleDeleteEvent(final OrganizationEntityChangeDTO organizationEntityChangeDTO) {
     try {
       final DelegateEntityOwner owner =
-          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), StringUtils.EMPTY);
-      delegateNgTokenService.revokeDelegateToken(
-          organizationEntityChangeDTO.getAccountIdentifier(), owner, delegateNgTokenService.getDefaultTokenName(owner));
-      log.info("Organization {}/{} deleted and default Delegate Token revoked.",
+          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), null);
+      delegateNgTokenService.deleteAllTokensOwnedByOrgAndProject(
+          organizationEntityChangeDTO.getAccountIdentifier(), owner);
+      log.info("Organization {}/{} deleted and all Delegate Token owned by organization has been deleted.",
           organizationEntityChangeDTO.getAccountIdentifier(), organizationEntityChangeDTO.getIdentifier());
       return true;
     } catch (final Exception e) {
-      log.error("Failed to revoke default Delegate Token for organization {}/{}, caused by: {}",
+      log.error("Failed to delete Delegate Tokens for organization {}/{}, caused by: {}",
           organizationEntityChangeDTO.getAccountIdentifier(), organizationEntityChangeDTO.getIdentifier(), e);
       return false;
     }
@@ -114,7 +114,7 @@ public class OrganizationEntityCRUDEventListener implements MessageListener {
   private boolean handleRestoreEvent(final OrganizationEntityChangeDTO organizationEntityChangeDTO) {
     try {
       delegateNgTokenService.upsertDefaultToken(organizationEntityChangeDTO.getAccountIdentifier(),
-          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), StringUtils.EMPTY), false);
+          DelegateEntityOwnerHelper.buildOwner(organizationEntityChangeDTO.getIdentifier(), null), false);
       log.info("Organization {}/{} restored and new default Delegate Token generated.",
           organizationEntityChangeDTO.getAccountIdentifier(), organizationEntityChangeDTO.getIdentifier());
       return true;
