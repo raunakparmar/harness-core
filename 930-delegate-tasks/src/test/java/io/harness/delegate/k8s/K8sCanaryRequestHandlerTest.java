@@ -196,14 +196,14 @@ public class K8sCanaryRequestHandlerTest extends CategoryTest {
             .releaseName(releaseName)
             .kustomizePatchesList(kustomizePatchesList)
             .manifestDelegateConfig(KustomizeManifestDelegateConfig.builder().build())
-            .useVarSupportForKustomize(true)
+            .useLatestKustomizeVersion(true)
             .accountId(accountId)
             .build();
     assertThat(k8sCanaryRequestHandler.getManifestOverrideFlies(canaryDeployRequest).get(0)).isEqualTo("patch1");
 
     canaryDeployRequest = K8sCanaryDeployRequest.builder()
                               .releaseName(releaseName)
-                              .useVarSupportForKustomize(true)
+                              .useLatestKustomizeVersion(true)
                               .manifestDelegateConfig(K8sManifestDelegateConfig.builder().build())
                               .valuesYamlList(valuesYamlList)
                               .accountId(accountId)
@@ -214,7 +214,7 @@ public class K8sCanaryRequestHandlerTest extends CategoryTest {
                               .releaseName(releaseName)
                               .openshiftParamList(openShiftParamList)
                               .manifestDelegateConfig(OpenshiftManifestDelegateConfig.builder().build())
-                              .useVarSupportForKustomize(true)
+                              .useLatestKustomizeVersion(true)
                               .accountId(accountId)
                               .build();
     assertThat(k8sCanaryRequestHandler.getManifestOverrideFlies(canaryDeployRequest).get(0)).isEqualTo("param1");
