@@ -43,9 +43,6 @@ import lombok.AllArgsConstructor;
 @OwnedBy(PIPELINE)
 public class PipelineRefValidator implements TriggerValidator {
   private final BuildTriggerHelper validationHelper;
-  private static final String PIPELINE = "pipeline";
-  private static final String TRIGGER = "trigger";
-  private static final String INPUT_YAML = "inputYaml";
 
   @Override
   public ValidationResult validate(TriggerDetails triggerDetails) {
@@ -66,97 +63,8 @@ public class PipelineRefValidator implements TriggerValidator {
                        .append(" does not exists")
                        .toString();
       builder.success(false).message(ref);
-    } else {
-      String pipelineYaml = pipelineYmlOptional.get();
-      String templateYaml = createRuntimeInputForm(pipelineYaml);
-      String triggerYaml = triggerDetails.getNgTriggerEntity().getYaml();
-      String triggerPipelineYml = getPipelineComponent(triggerYaml);
-      Map<FQN, String> invalidFQNs = getInvalidFQNsInTrigger(templateYaml, triggerPipelineYml);
-      if (EmptyPredicate.isEmpty(invalidFQNs)) {
-        builder.build();
-      }
-      StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append("Invalid fields");
-      for (Map.Entry<FQN, String> entry : invalidFQNs.entrySet()) {
-        stringBuilder.append("\n");
-        stringBuilder.append(entry.getKey().display());
-        stringBuilder.append(": ");
-        stringBuilder.append(entry.getValue());
-      }
-      builder.success(false).message(stringBuilder.toString());
     }
 
     return builder.build();
-  }
-
-  private String getPipelineComponent(String triggerYml) {
-    try {
-      if (EmptyPredicate.isEmpty(triggerYml)) {
-        return triggerYml;
-      }
-      JsonNode node = YamlUtils.readTree(triggerYml).getNode().getCurrJsonNode();
-      ObjectNode innerMap = (ObjectNode) node.get(TRIGGER);
-      if (innerMap == null) {
-        throw new InvalidRequestException("Yaml provided is not an trigger yaml.");
-      }
-      JsonNode pipelineNode = innerMap.get(INPUT_YAML).get(PIPELINE);
-      innerMap.removeAll();
-      innerMap.putObject(PIPELINE);
-      innerMap.set(PIPELINE, pipelineNode);
-      return YamlUtils.write(innerMap).replace("---\n", "");
-    } catch (IOException e) {
-      throw new InvalidYamlException("Trigger yaml is invalid", e);
-    }
-  }
-
-  public Map<FQN, String> getInvalidFQNsInTrigger(String templateYaml, String triggerPipelineCompYaml) {
-    Map<FQN, String> errorMap = new LinkedHashMap<>();
-    YamlConfig triggerConfig = new YamlConfig(triggerPipelineCompYaml);
-    Set<FQN> triggerFQNs = new LinkedHashSet<>(triggerConfig.getFqnToValueMap().keySet());
-    if (EmptyPredicate.isEmpty(templateYaml)) {
-      triggerFQNs.forEach(fqn -> errorMap.put(fqn, "Pipeline no longer contains any runtime input"));
-      return errorMap;
-    }
-    YamlConfig templateConfig = new YamlConfig(templateYaml);
-
-    // Make sure everything in trigger exist in pipeline
-    templateConfig.getFqnToValueMap().keySet().forEach(key -> {
-      if (triggerFQNs.contains(key)) {
-        Object templateValue = templateConfig.getFqnToValueMap().get(key);
-        Object value = triggerConfig.getFqnToValueMap().get(key);
-        if (key.isType() || key.isIdentifierOrVariableName()) {
-          if (!value.toString().equals(templateValue.toString())) {
-            errorMap.put(key,
-                "The value for " + key.getExpressionFqn() + " is " + templateValue.toString()
-                    + "in the pipeline yaml, but the trigger has it as " + value.toString());
-          }
-        } else {
-          String error = validateStaticValues(templateValue, value);
-          if (EmptyPredicate.isNotEmpty(error)) {
-            errorMap.put(key, error);
-          }
-        }
-
-        triggerFQNs.remove(key);
-      } else {
-        Map<FQN, Object> subMap = YamlSubMapExtractor.getFQNToObjectSubMap(triggerConfig.getFqnToValueMap(), key);
-        subMap.keySet().forEach(triggerFQNs::remove);
-      }
-    });
-    triggerFQNs.forEach(fqn -> errorMap.put(fqn, "Field either not present in pipeline or not a runtime input"));
-    return errorMap;
-  }
-
-  public String createRuntimeInputForm(String yaml) {
-    YamlConfig yamlConfig = new YamlConfig(yaml);
-    Map<FQN, Object> fullMap = yamlConfig.getFqnToValueMap();
-    Map<FQN, Object> templateMap = new LinkedHashMap<>();
-    fullMap.keySet().forEach(key -> {
-      String value = fullMap.get(key).toString().replace("\"", "");
-      if (NGExpressionUtils.matchesInputSetPattern(value)) {
-        templateMap.put(key, fullMap.get(key));
-      }
-    });
-    return (new YamlConfig(templateMap, yamlConfig.getYamlMap())).getYaml();
   }
 }
