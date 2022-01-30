@@ -144,24 +144,6 @@ public class PipelineRefValidator implements TriggerValidator {
       }
     });
     triggerFQNs.forEach(fqn -> errorMap.put(fqn, "Field either not present in pipeline or not a runtime input"));
-
-    // Make sure everything in pipeline exist in trigger
-    Set<FQN> pipelineFQNs = new LinkedHashSet<>(templateConfig.getFqnToValueMap().keySet());
-    if (EmptyPredicate.isEmpty(triggerPipelineCompYaml)) {
-      pipelineFQNs.forEach(fqn -> errorMap.put(fqn, "Trigger does not contain any runtime input"));
-      return errorMap;
-    }
-
-    triggerConfig.getFqnToValueMap().keySet().forEach(key -> {
-      if (pipelineFQNs.contains(key)) {
-        pipelineFQNs.remove(key);
-      } else {
-        Map<FQN, Object> subMap = YamlSubMapExtractor.getFQNToObjectSubMap(templateConfig.getFqnToValueMap(), key);
-        subMap.keySet().forEach(pipelineFQNs::remove);
-      }
-    });
-    pipelineFQNs.forEach(
-        fqn -> errorMap.put(fqn, "Field present in pipeline as run time input but not set in trigger"));
     return errorMap;
   }
 
