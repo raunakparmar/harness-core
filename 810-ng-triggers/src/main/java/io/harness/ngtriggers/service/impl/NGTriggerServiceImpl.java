@@ -57,6 +57,7 @@ import io.harness.ngtriggers.buildtriggers.helpers.BuildTriggerHelper;
 import io.harness.ngtriggers.events.TriggerCreateEvent;
 import io.harness.ngtriggers.events.TriggerDeleteEvent;
 import io.harness.ngtriggers.events.TriggerUpdateEvent;
+import io.harness.ngtriggers.exceptions.InvalidTriggerYamlException;
 import io.harness.ngtriggers.helpers.TriggerHelper;
 import io.harness.ngtriggers.mapper.NGTriggerElementMapper;
 import io.harness.ngtriggers.mapper.TriggerFilterHelper;
@@ -90,6 +91,7 @@ import com.google.inject.Singleton;
 import com.mongodb.client.result.UpdateResult;
 import java.io.IOException;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -596,16 +598,12 @@ public class NGTriggerServiceImpl implements NGTriggerService {
       if (EmptyPredicate.isEmpty(invalidFQNs)) {
         return;
       }
-      StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append("Trigger yaml is invalid:");
+      Map<String, String> errorMap = new HashMap<>();
       for (Map.Entry<FQN, String> entry : invalidFQNs.entrySet()) {
         String displayFQN = StringUtils.removeEnd(entry.getKey().display(), ".");
-        stringBuilder.append("\n");
-        stringBuilder.append(displayFQN);
-        stringBuilder.append(": ");
-        stringBuilder.append(entry.getValue());
+        errorMap.put(displayFQN, entry.getValue());
       }
-      throw new InvalidYamlException(stringBuilder.toString());
+      throw new InvalidTriggerYamlException("Invalid Yaml", errorMap, triggerDetails, null);
     }
   }
 
