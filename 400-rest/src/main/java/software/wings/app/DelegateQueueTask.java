@@ -58,12 +58,15 @@ import com.google.inject.Inject;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.slf4j.Slf4j;
 import org.mongodb.morphia.Key;
@@ -89,6 +92,12 @@ public class DelegateQueueTask implements Runnable {
   @Inject private DelegateTaskService delegateTaskService;
   @Inject private DelegateSelectionLogsService delegateSelectionLogsService;
   @Inject private DelegateMetricsService delegateMetricsService;
+
+  // async tasks{5sec, 30 Sec, 1 Min, 2 Min, 4 Min, 8 Min,
+  private List<Integer> asyncIntervals = Arrays.asList(5, 30, 60, 120, 240, 480, 900);
+
+  // sync tasks{5sec, 30 Sec, 1 Min, 2 Min, 4 Min
+  private List<Integer> syncIntervals = Arrays.asList(5, 30, 60, 120, 240);
 
   @Override
   public void run() {
@@ -277,12 +286,14 @@ public class DelegateQueueTask implements Runnable {
           eligibleDelegatesList.addLast(delegateId);
         }
 
+        long nextBroadcastInterval = nextBroadcastInterval(delegateTask, broadcastToDelegates);
         UpdateOperations<DelegateTask> updateOperations =
             persistence.createUpdateOperations(DelegateTask.class)
                 .set(DelegateTaskKeys.lastBroadcastAt, now)
-                .set(DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount() + 1)
+                .set(DelegateTaskKeys.broadcastCount, delegateTask.getBroadcastCount())
                 .set(DelegateTaskKeys.eligibleToExecuteDelegateIds, eligibleDelegatesList)
-                .set(DelegateTaskKeys.nextBroadcast, now + TimeUnit.SECONDS.toMillis(5));
+                .set(DelegateTaskKeys.alreadyTriedDelegates, delegateTask.getAlreadyTriedDelegates())
+                .set(DelegateTaskKeys.nextBroadcast, now + nextBroadcastInterval);
         delegateTask = persistence.findAndModify(query, updateOperations, HPersistence.returnNewOptions);
         // update failed, means this was broadcast by some other manager
         if (delegateTask == null) {
@@ -319,5 +330,16 @@ public class DelegateQueueTask implements Runnable {
 
   private boolean shouldExpireTask(DelegateTask task) {
     return !task.isForceExecute();
+  }
+
+  private long nextBroadcastInterval(DelegateTask task, List<String> broadcastToDelegates) {
+    AtomicInteger broadcastCount = new AtomicInteger(task.getBroadcastCount());
+    Set<String> alreadyTriedDelegates = Optional.ofNullable(task.getAlreadyTriedDelegates()).orElse(Sets.newHashSet());
+    Optional.of(alreadyTriedDelegates.containsAll(task.getEligibleToExecuteDelegateIds()))
+        .orElseGet(() -> alreadyTriedDelegates.addAll(broadcastToDelegates));
+    task.setAlreadyTriedDelegates(Collections.<String>emptySet());
+    task.setBroadcastCount(broadcastCount.getAndIncrement());
+    return task.getData().isAsync() ? asyncIntervals.get(Math.min(broadcastCount.get(), asyncIntervals.size() - 1))
+                                    : syncIntervals.get(Math.min(broadcastCount.get(), syncIntervals.size() - 1));
   }
 }
