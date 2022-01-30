@@ -544,7 +544,6 @@ public class NGTriggerServiceImpl implements NGTriggerService {
   public void validateTriggerConfig(TriggerDetails triggerDetails) {
     // will be returned if certain conditions are not met. Either use this as a gateway or spin off a specific class
     // for the validation.
-    validatePipelineRef(triggerDetails);
 
     // trigger source validation
     if (isBlank(triggerDetails.getNgTriggerEntity().getIdentifier())) {
@@ -554,6 +553,8 @@ public class NGTriggerServiceImpl implements NGTriggerService {
     if (isBlank(triggerDetails.getNgTriggerEntity().getName())) {
       throw new InvalidArgumentsException("Name can not be empty");
     }
+
+    validatePipelineRef(triggerDetails);
 
     NGTriggerSourceV2 triggerSource = triggerDetails.getNgTriggerConfigV2().getSource();
     NGTriggerSpecV2 spec = triggerSource.getSpec();
