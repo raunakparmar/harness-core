@@ -600,8 +600,7 @@ public class NGTriggerServiceImpl implements NGTriggerService {
       }
       Map<String, String> errorMap = new HashMap<>();
       for (Map.Entry<FQN, String> entry : invalidFQNs.entrySet()) {
-        String displayFQN = StringUtils.removeEnd(entry.getKey().display(), ".");
-        errorMap.put(displayFQN, entry.getValue());
+        errorMap.put(entry.getKey().getExpressionFqn(), entry.getValue());
       }
       throw new InvalidTriggerYamlException("Invalid Yaml", errorMap, triggerDetails, null);
     }
