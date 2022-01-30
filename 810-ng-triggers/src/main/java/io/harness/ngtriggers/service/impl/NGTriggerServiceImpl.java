@@ -542,9 +542,9 @@ public class NGTriggerServiceImpl implements NGTriggerService {
 
   @Override
   public void validateTriggerConfig(TriggerDetails triggerDetails) {
-    // TODO: come up with a comprehensive list of back-end checks for the trigger details for which an error
     // will be returned if certain conditions are not met. Either use this as a gateway or spin off a specific class
     // for the validation.
+    validatePipelineRef(triggerDetails);
 
     // trigger source validation
     if (isBlank(triggerDetails.getNgTriggerEntity().getIdentifier())) {
@@ -559,7 +559,6 @@ public class NGTriggerServiceImpl implements NGTriggerService {
     NGTriggerSpecV2 spec = triggerSource.getSpec();
     switch (triggerSource.getType()) {
       case WEBHOOK:
-        validatePipelineRef(triggerDetails);
         return; // TODO(adwait): define trigger source validation
       case SCHEDULED:
         ScheduledTriggerConfig scheduledTriggerConfig = (ScheduledTriggerConfig) triggerSource.getSpec();
