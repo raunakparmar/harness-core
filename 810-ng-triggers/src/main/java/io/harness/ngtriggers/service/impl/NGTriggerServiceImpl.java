@@ -103,6 +103,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
@@ -598,8 +599,9 @@ public class NGTriggerServiceImpl implements NGTriggerService {
       StringBuilder stringBuilder = new StringBuilder();
       stringBuilder.append("Trigger yaml is invalid:");
       for (Map.Entry<FQN, String> entry : invalidFQNs.entrySet()) {
+        String displayFQN = StringUtils.removeEnd(entry.getKey().display(), ".");
         stringBuilder.append("\n");
-        stringBuilder.append(entry.getKey().display());
+        stringBuilder.append(displayFQN);
         stringBuilder.append(": ");
         stringBuilder.append(entry.getValue());
       }
@@ -617,11 +619,12 @@ public class NGTriggerServiceImpl implements NGTriggerService {
       if (innerMap == null) {
         throw new InvalidRequestException("Yaml provided is not an trigger yaml.");
       }
-      JsonNode pipelineNode = innerMap.get(INPUT_YAML).get(PIPELINE);
-      innerMap.removeAll();
-      innerMap.putObject(PIPELINE);
-      innerMap.set(PIPELINE, pipelineNode);
-      return YamlUtils.write(innerMap).replace("---\n", "");
+      JsonNode inputYaml = innerMap.get(INPUT_YAML);
+      if (inputYaml == null) {
+        throw new InvalidRequestException("Yaml provided is not an trigger yaml.");
+      }
+      JsonNode pipelineNode = YamlUtils.readTree(inputYaml.asText()).getNode().getCurrJsonNode();
+      return YamlUtils.write(pipelineNode).replace("---\n", "");
     } catch (IOException e) {
       throw new InvalidYamlException("Trigger yaml is invalid", e);
     }
