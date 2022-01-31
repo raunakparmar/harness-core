@@ -20,7 +20,6 @@ import io.harness.accesscontrol.clients.Resource;
 import io.harness.accesscontrol.clients.ResourceScope;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.engine.executions.node.NodeExecutionService;
 import io.harness.engine.executions.retry.RetryHistoryResponseDto;
 import io.harness.engine.executions.retry.RetryInfo;
 import io.harness.engine.executions.retry.RetryLatestExecutionResponseDto;
@@ -116,7 +115,6 @@ public class PlanExecutionResource {
   @Inject private final PreflightService preflightService;
   @Inject private final PMSPipelineService pmsPipelineService;
   @Inject private final RetryExecutionHelper retryExecutionHelper;
-  @Inject private final NodeExecutionService nodeExecutionService;
 
   @POST
   @Path("/{identifier}")
@@ -522,10 +520,6 @@ public class PlanExecutionResource {
       @NotNull @Parameter(description = PlanExecutionResourceConstants.NODE_EXECUTION_ID_PARAM_MESSAGE
               + " on which the Interrupt needs to be applied.",
           required = true) @PathParam("nodeExecutionId") String nodeExecutionId) {
-    boolean exists = nodeExecutionService.ifExists(nodeExecutionId);
-    if (!exists) {
-      throw new InvalidRequestException(String.format("Invalid node execution id %s ", nodeExecutionId));
-    }
     return ResponseDTO.newResponse(
         pmsExecutionService.registerInterrupt(executionInterruptType, planExecutionId, nodeExecutionId));
   }
