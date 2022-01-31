@@ -8,34 +8,18 @@
 package io.harness.ngtriggers.validations.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.PIPELINE;
-import static io.harness.pms.yaml.validation.RuntimeInputValuesValidator.validateStaticValues;
 
 import io.harness.annotations.dev.OwnedBy;
-import io.harness.common.NGExpressionUtils;
-import io.harness.data.structure.EmptyPredicate;
-import io.harness.exception.InvalidRequestException;
-import io.harness.exception.InvalidYamlException;
 import io.harness.ngtriggers.beans.dto.TriggerDetails;
 import io.harness.ngtriggers.beans.entity.NGTriggerEntity;
 import io.harness.ngtriggers.buildtriggers.helpers.BuildTriggerHelper;
 import io.harness.ngtriggers.validations.TriggerValidator;
 import io.harness.ngtriggers.validations.ValidationResult;
 import io.harness.ngtriggers.validations.ValidationResult.ValidationResultBuilder;
-import io.harness.pms.merger.YamlConfig;
-import io.harness.pms.merger.fqn.FQN;
-import io.harness.pms.merger.helpers.YamlSubMapExtractor;
-import io.harness.pms.yaml.YamlUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 
 @Singleton
