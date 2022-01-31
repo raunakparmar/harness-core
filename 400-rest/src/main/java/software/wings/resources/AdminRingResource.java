@@ -43,6 +43,7 @@ public class AdminRingResource {
     if (isBlank(delegateTag) || isBlank(ringName)) {
       throw new InvalidRequestException("Empty delegate tag or ring name");
     }
+    log.info("Updating delegate image tag for ring {} to {}", ringName, delegateTag);
     return new RestResponse<>(adminRingService.updateDelegateImageTag(delegateTag, ringName));
   }
 
@@ -54,6 +55,7 @@ public class AdminRingResource {
     if (isBlank(upgraderTag) || isBlank(ringName)) {
       throw new InvalidRequestException("Empty upgrader tag or ring name");
     }
+    log.info("Updating upgrader image tag for ring {} to {}", ringName, upgraderTag);
     return new RestResponse<>(adminRingService.updateUpgraderImageTag(upgraderTag, ringName));
   }
 
@@ -65,6 +67,7 @@ public class AdminRingResource {
     if (isBlank(delegateVersion) || isBlank(ringName)) {
       throw new InvalidRequestException("Empty delegate version or ring name");
     }
+    log.info("Updating delegate.jar version for ring {} to {}", ringName, delegateVersion);
     return new RestResponse<>(adminRingService.updateDelegateVersion(delegateVersion, ringName));
   }
 }
