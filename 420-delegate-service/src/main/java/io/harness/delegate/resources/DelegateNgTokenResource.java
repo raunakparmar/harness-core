@@ -83,7 +83,7 @@ public class DelegateNgTokenResource {
       })
   public RestResponse<DelegateTokenDetails>
   createToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                  NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountId,
+                  "accountId") @NotNull String accountId,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) String orgId,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
@@ -105,7 +105,7 @@ public class DelegateNgTokenResource {
       })
   public RestResponse<Void>
   revokeToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                  NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountId,
+                  "accountId") @NotNull String accountId,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) String orgId,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
@@ -128,7 +128,7 @@ public class DelegateNgTokenResource {
       })
   public RestResponse<List<DelegateTokenDetails>>
   getDelegateTokens(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                        NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountId,
+                        "accountId") @NotNull String accountId,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) String orgId,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
@@ -155,7 +155,7 @@ public class DelegateNgTokenResource {
       })
   public RestResponse<Void>
   upsertDefaultToken(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @QueryParam(
-                         NGCommonEntityConstants.ACCOUNT_KEY) @NotNull String accountId,
+                         "accountId") @NotNull String accountId,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) String orgId,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(

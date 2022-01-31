@@ -29,7 +29,6 @@ import static software.wings.service.impl.DelegateServiceImpl.KUBERNETES_DELEGAT
 import static java.util.stream.Collectors.toList;
 
 import io.harness.NGCommonEntityConstants;
-import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.accesscontrol.OrgIdentifier;
 import io.harness.accesscontrol.ProjectIdentifier;
 import io.harness.accesscontrol.clients.AccessControlClient;
@@ -1068,7 +1067,7 @@ public class DelegateSetupResourceV3 {
       })
   public RestResponse<DelegateGroupListing>
   list(@Parameter(description = NGCommonEntityConstants.ACCOUNT_PARAM_MESSAGE) @NotEmpty @QueryParam(
-           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier String accountIdentifier,
+           "accountId") @NotNull String accountIdentifier,
       @Parameter(description = NGCommonEntityConstants.ORG_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ORG_KEY) @OrgIdentifier String orgIdentifier,
       @Parameter(description = NGCommonEntityConstants.PROJECT_PARAM_MESSAGE) @QueryParam(
