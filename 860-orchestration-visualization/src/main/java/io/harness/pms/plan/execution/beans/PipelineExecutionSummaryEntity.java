@@ -226,6 +226,6 @@ public class PipelineExecutionSummaryEntity implements PersistentEntity, UuidAwa
   }
 
   public boolean isStagesExecutionAllowed() {
-    return allowStagesExecution == null ? false : allowStagesExecution;
+    return allowStagesExecution != null && allowStagesExecution;
   }
 }

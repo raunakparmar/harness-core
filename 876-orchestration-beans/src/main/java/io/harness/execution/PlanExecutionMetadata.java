@@ -78,6 +78,6 @@ public class PlanExecutionMetadata implements PersistentEntity, UuidAware, PmsNo
   }
 
   public boolean isStagesExecutionAllowed() {
-    return allowStagesExecution == null ? false : allowStagesExecution;
+    return allowStagesExecution != null && allowStagesExecution;
   }
 }
