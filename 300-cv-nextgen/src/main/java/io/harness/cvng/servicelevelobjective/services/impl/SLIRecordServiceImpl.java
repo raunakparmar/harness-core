@@ -19,6 +19,7 @@ import io.harness.cvng.servicelevelobjective.entities.SLIRecord;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordKeys;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIRecordParam;
 import io.harness.cvng.servicelevelobjective.entities.SLIRecord.SLIState;
+import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
 import io.harness.persistence.HPersistence;
 
@@ -216,6 +217,13 @@ public class SLIRecordServiceImpl implements SLIRecordService {
         .lessThan(endTimeStamp)
         .order(Sort.ascending(SLIRecordKeys.timestamp))
         .asList();
+  }
+
+  @Override
+  public void delete(List<String> sliIds) {
+    hPersistence.delete(hPersistence.createQuery(SLIRecord.class)
+            .field(SLIRecordKeys.sliId)
+            .in(sliIds);
   }
 
   private SLIRecord getLastSLIRecord(String sliId, Instant startTimeStamp) {
