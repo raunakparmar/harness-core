@@ -12,7 +12,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.harness.CategoryTest;
 import io.harness.beans.Scope;
-import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.gitops.models.Repository;
@@ -51,13 +50,6 @@ public class RepoResourceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void getType() {
     assertThat(repositoryResource.getType()).isEqualTo("GITOPS_REPOSITORY");
-  }
-
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void getValidScopeLevels() {
-    assertThat(repositoryResource.getValidScopeLevels()).containsExactlyInAnyOrder(ScopeLevel.PROJECT);
   }
 
   @Test

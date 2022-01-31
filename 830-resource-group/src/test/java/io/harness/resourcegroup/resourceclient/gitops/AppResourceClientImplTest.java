@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.harness.beans.Scope;
-import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.gitops.models.Application;
@@ -50,13 +49,6 @@ public class AppResourceClientImplTest {
   @Category(UnitTests.class)
   public void getType() {
     assertThat(applicationResource.getType()).isEqualTo("GITOPS_APP");
-  }
-
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void getValidScopeLevels() {
-    assertThat(applicationResource.getValidScopeLevels()).containsExactlyInAnyOrder(ScopeLevel.PROJECT);
   }
 
   @Test

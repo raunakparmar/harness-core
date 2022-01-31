@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.harness.beans.Scope;
-import io.harness.beans.ScopeLevel;
 import io.harness.category.element.UnitTests;
 import io.harness.eventsframework.EventsFrameworkMetadataConstants;
 import io.harness.gitops.models.Cluster;
@@ -50,13 +49,6 @@ public class ClusterResourceImplTest {
   @Category(UnitTests.class)
   public void getType() {
     assertThat(clusterResource.getType()).isEqualTo("GITOPS_CLUSTER");
-  }
-
-  @Test
-  @Owner(developers = YOGESH)
-  @Category(UnitTests.class)
-  public void getValidScopeLevels() {
-    assertThat(clusterResource.getValidScopeLevels()).containsExactlyInAnyOrder(ScopeLevel.PROJECT);
   }
 
   @Test
