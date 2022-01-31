@@ -67,8 +67,8 @@ import org.springframework.stereotype.Service;
 public class RESTWrapperRecommendationDetails {
   @Inject private RecommendationsDetailsQuery detailsQuery;
 
-  private final static String INVALID_DATETIME_INPUT = "datetime range invalid.\nProvided from:[%s] to:[%s]";
-  private final static String DATETIME_DESCRIPTION =
+  private static final String INVALID_DATETIME_INPUT = "datetime range invalid.\nProvided from:[%s] to:[%s]";
+  private static final String DATETIME_DESCRIPTION =
       "Should use org.joda.time.DateTime parsable format. Example, '2022-01-31', '2022-01-31T07:54Z' or '2022-01-31T07:54:51.264Z'";
 
   @GET
