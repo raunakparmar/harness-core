@@ -27,6 +27,8 @@ import io.harness.rule.Owner;
 import io.harness.rule.OwnerRule;
 
 import io.leangen.graphql.execution.ResolutionEnvironment;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,18 +81,52 @@ public class RESTWrapperRecommendationDetailsTest extends CategoryTest {
   @Test
   @Owner(developers = OwnerRule.UTSAV)
   @Category(UnitTests.class)
-  public void testWorkloadRecommendationDetail() throws Exception {
+  public void testWorkloadRecommendationDetailDefaultDateTimeInput() throws Exception {
+    final ArgumentCaptor<OffsetDateTime> startTimeCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+    final ArgumentCaptor<OffsetDateTime> endTimeCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+
     RecommendationDetailsDTO recommendationDetailsDTO =
         WorkloadRecommendationDTO.builder().id(RECOMMENDATION_ID).build();
-    when(detailsQuery.recommendationDetails(
-             any(String.class), eq(ResourceType.WORKLOAD), any(), any(), envCaptor.capture()))
+    when(detailsQuery.recommendationDetails(any(String.class), eq(ResourceType.WORKLOAD), startTimeCaptor.capture(),
+             endTimeCaptor.capture(), envCaptor.capture()))
         .thenReturn(recommendationDetailsDTO);
 
     WorkloadRecommendationDTO workloadRecommendationDTO =
-        restWrapperRecommendationDetails.workloadRecommendationDetail(ACCOUNT_ID, RECOMMENDATION_ID).getData();
+        restWrapperRecommendationDetails.workloadRecommendationDetail(ACCOUNT_ID, RECOMMENDATION_ID, null, null)
+            .getData();
 
     assertThat(workloadRecommendationDTO).isInstanceOf(RecommendationDetailsDTO.class);
     assertThat(workloadRecommendationDTO).isEqualTo(recommendationDetailsDTO);
+
+    assertThat(startTimeCaptor.getValue()).isEqualTo(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS).minusDays(7));
+    assertThat(endTimeCaptor.getValue()).isEqualTo(OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS));
+
+    verify(detailsQuery, times(0)).recommendationDetails(any(RecommendationItemDTO.class), any(), any(), any());
+  }
+
+  @Test
+  @Owner(developers = OwnerRule.UTSAV)
+  @Category(UnitTests.class)
+  public void testWorkloadRecommendationDetailDateTimeInput() throws Exception {
+    final ArgumentCaptor<OffsetDateTime> startTimeCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+    final ArgumentCaptor<OffsetDateTime> endTimeCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+
+    RecommendationDetailsDTO recommendationDetailsDTO =
+        WorkloadRecommendationDTO.builder().id(RECOMMENDATION_ID).build();
+    when(detailsQuery.recommendationDetails(any(String.class), eq(ResourceType.WORKLOAD), startTimeCaptor.capture(),
+             endTimeCaptor.capture(), envCaptor.capture()))
+        .thenReturn(recommendationDetailsDTO);
+
+    WorkloadRecommendationDTO workloadRecommendationDTO =
+        restWrapperRecommendationDetails
+            .workloadRecommendationDetail(ACCOUNT_ID, RECOMMENDATION_ID, "2022-01-03", "2022-01-10")
+            .getData();
+
+    assertThat(workloadRecommendationDTO).isInstanceOf(RecommendationDetailsDTO.class);
+    assertThat(workloadRecommendationDTO).isEqualTo(recommendationDetailsDTO);
+
+    assertThat(startTimeCaptor.getValue().toString()).isEqualTo("2022-01-03T00:00Z");
+    assertThat(endTimeCaptor.getValue().toString()).isEqualTo("2022-01-10T00:00Z");
 
     verify(detailsQuery, times(0)).recommendationDetails(any(RecommendationItemDTO.class), any(), any(), any());
   }

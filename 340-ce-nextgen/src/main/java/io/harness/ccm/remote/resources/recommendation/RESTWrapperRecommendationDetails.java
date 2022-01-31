@@ -14,11 +14,13 @@ import io.harness.NGCommonEntityConstants;
 import io.harness.accesscontrol.AccountIdentifier;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.ccm.commons.beans.recommendation.ResourceType;
+import io.harness.ccm.commons.utils.TimeUtils;
 import io.harness.ccm.graphql.dto.recommendation.NodeRecommendationDTO;
 import io.harness.ccm.graphql.dto.recommendation.WorkloadRecommendationDTO;
 import io.harness.ccm.graphql.query.recommendation.RecommendationsDetailsQuery;
 import io.harness.ccm.remote.utils.GraphQLToRESTHelper;
 import io.harness.ccm.utils.LogAccountIdentifier;
+import io.harness.exception.InvalidArgumentsException;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
 import io.harness.ng.core.dto.ResponseDTO;
@@ -35,7 +37,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.OffsetDateTime;
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -45,6 +47,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
 @Api("recommendation/details")
@@ -63,6 +66,10 @@ import org.springframework.stereotype.Service;
     content = { @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = ErrorDTO.class)) })
 public class RESTWrapperRecommendationDetails {
   @Inject private RecommendationsDetailsQuery detailsQuery;
+
+  private final static String INVALID_DATETIME_INPUT = "datetime range invalid.\nProvided from:[%s] to:[%s]";
+  private final static String DATETIME_DESCRIPTION =
+      "Should use org.joda.time.DateTime parsable format. Example, '2022-01-31', '2022-01-31T07:54Z' or '2022-01-31T07:54:51.264Z'";
 
   @GET
   @Path("node-pool")
@@ -111,11 +118,31 @@ public class RESTWrapperRecommendationDetails {
       @Parameter(required = true, description = ACCOUNT_PARAM_MESSAGE) @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) @AccountIdentifier @NotNull @Valid String accountId,
       @Parameter(required = true, description = "Workload Recommendation identifier.") @QueryParam(
-          "id") @NotNull @Valid String id) {
+          "id") @NotNull @Valid String id,
+      @Parameter(required = false, description = DATETIME_DESCRIPTION + " Defaults to Today-7days") @QueryParam(
+          "from") @Nullable @Valid String from,
+      @Parameter(required = false, description = DATETIME_DESCRIPTION + " Defaults to Today") @QueryParam(
+          "to") @Nullable @Valid String to) {
     final ResolutionEnvironment env = GraphQLToRESTHelper.createResolutionEnv(accountId);
 
-    WorkloadRecommendationDTO workloadRecommendation = (WorkloadRecommendationDTO) detailsQuery.recommendationDetails(
-        id, ResourceType.WORKLOAD, OffsetDateTime.now().minusDays(7), OffsetDateTime.now(), env);
+    DateTime endTime = DateTime.now().withTimeAtStartOfDay();
+    DateTime startTime = endTime.minusDays(7);
+
+    if (from != null) {
+      startTime = DateTime.parse(from);
+    }
+    if (to != null) {
+      endTime = DateTime.parse(to);
+    }
+
+    if (startTime.isAfter(endTime)) {
+      throw new InvalidArgumentsException(
+          String.format(INVALID_DATETIME_INPUT, startTime.toString(), endTime.toString()));
+    }
+
+    WorkloadRecommendationDTO workloadRecommendation =
+        (WorkloadRecommendationDTO) detailsQuery.recommendationDetails(id, ResourceType.WORKLOAD,
+            TimeUtils.toOffsetDateTime(startTime.getMillis()), TimeUtils.toOffsetDateTime(endTime.getMillis()), env);
     return ResponseDTO.newResponse(workloadRecommendation);
   }
 }
