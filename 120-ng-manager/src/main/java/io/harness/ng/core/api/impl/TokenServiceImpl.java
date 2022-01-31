@@ -196,8 +196,9 @@ public class TokenServiceImpl implements TokenService {
                 tokenDTO.getProjectIdentifier(), tokenDTO.getParentIdentifier());
         Optional<UserMetadataDTO> optionalUserInfo = ngUserService.getUserByEmail(serviceAccountDTO.getEmail(), true);
         if (optionalUserInfo.isPresent()) {
-          tokenDTO.setEmail(serviceAccountDTO.getEmail());
-          tokenDTO.setUsername(serviceAccountDTO.getName());
+          UserMetadataDTO userInfo = optionalUserInfo.get();
+          tokenDTO.setEmail(userInfo.getEmail());
+          tokenDTO.setUsername(userInfo.getName());
           return tokenDTO;
         }
       }
