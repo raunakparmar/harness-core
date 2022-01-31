@@ -56,9 +56,11 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
                                                 .planExecutionId(planExecutionId)
                                                 .resolvedInputs(stepParameters)
                                                 .build();
-    nodeExecutionsInfoRepository.save(nodeExecutionsInfo);
-    stepDetailsUpdateObserverSubject.fireInform(StepDetailsUpdateObserver::onStepInputsAdd,
-        StepDetailsUpdateInfo.builder().nodeExecutionId(nodeExecutionId).planExecutionId(planExecutionId).build());
+    if (!nodeExecutionsInfoRepository.findByNodeExecutionId(nodeExecutionId).isPresent()) {
+      nodeExecutionsInfoRepository.save(nodeExecutionsInfo);
+      stepDetailsUpdateObserverSubject.fireInform(StepDetailsUpdateObserver::onStepInputsAdd,
+          StepDetailsUpdateInfo.builder().nodeExecutionId(nodeExecutionId).planExecutionId(planExecutionId).build());
+    }
   }
 
   @Override
