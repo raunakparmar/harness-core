@@ -40,6 +40,7 @@ public class MergePlanCreationResponse implements AsyncCreatorResponse {
 
   public void merge(PlanCreationResponse other) {
     // adding PlanNode to map of nodes
+    addNode(other.getPlanNode());
 
     addNodes(other.getNodes());
     addDependencies(other.getDependencies());
@@ -51,6 +52,7 @@ public class MergePlanCreationResponse implements AsyncCreatorResponse {
 
   public void mergeWithoutDependencies(PlanCreationResponse other) {
     // adding PlanNode to map of nodes
+    addNode(other.getPlanNode());
 
     addNodes(other.getNodes());
     mergeStartingNodeId(other.getStartingNodeId());
