@@ -62,8 +62,8 @@ public class TerraformConfig implements PersistentEntity, CreatedAtAware {
   @NotNull String pipelineExecutionId;
   @NotNull long createdAt;
 
-  @NotNull GitStoreConfigDTO configFiles;
-  @NotNull StoreConfig fileStoreConfig;
+  GitStoreConfigDTO configFiles;
+  StoreConfig fileStoreConfig;
   List<TerraformVarFileConfig> varFileConfigs;
   String backendConfig;
   Map<String, String> environmentVariables;
