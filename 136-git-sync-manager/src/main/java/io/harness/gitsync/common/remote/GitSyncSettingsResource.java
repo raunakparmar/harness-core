@@ -94,8 +94,7 @@ public class GitSyncSettingsResource {
       @Valid GitSyncSettingsDTO gitSyncSettings) {
     // todo(abhinav): when git sync comes at other level see for new permission
     accessControlClient.checkForAccessOrThrow(
-        ResourceScope.of(
-            accountIdentifier, gitSyncSettings.getOrganizationIdentifier(), gitSyncSettings.getProjectIdentifier()),
+        ResourceScope.of(accountIdentifier, gitSyncSettings.getOrgIdentifier(), gitSyncSettings.getProjectIdentifier()),
         Resource.of(ResourceTypes.PROJECT, gitSyncSettings.getProjectIdentifier()), EDIT_PROJECT_PERMISSION);
 
     gitSyncSettings.setAccountIdentifier(accountIdentifier);
@@ -119,7 +118,7 @@ public class GitSyncSettingsResource {
         .orElseThrow(
             ()
                 -> new InvalidRequestException(String.format(
-                    "No Git Sync Setting found for accountIdentifier %s, organizationIdentifier %s and projectIdentifier %s",
+                    "No Git Sync Setting found for accountIdentifier %s, orgIdentifier %s and projectIdentifier %s",
                     accountIdentifier, organizationIdentifier, projectIdentifier)));
   }
 
@@ -135,8 +134,7 @@ public class GitSyncSettingsResource {
       @RequestBody(required = true, description = "This contains details of Git Sync Settings") @NotNull
       @Valid GitSyncSettingsDTO gitSyncSettings) {
     accessControlClient.checkForAccessOrThrow(
-        ResourceScope.of(
-            accountIdentifier, gitSyncSettings.getOrganizationIdentifier(), gitSyncSettings.getProjectIdentifier()),
+        ResourceScope.of(accountIdentifier, gitSyncSettings.getOrgIdentifier(), gitSyncSettings.getProjectIdentifier()),
         Resource.of(ResourceTypes.PROJECT, gitSyncSettings.getProjectIdentifier()), EDIT_PROJECT_PERMISSION);
 
     gitSyncSettings.setAccountIdentifier(accountIdentifier);

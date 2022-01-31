@@ -27,7 +27,7 @@ import lombok.Data;
 public class GitSyncSettingsDTO {
   @Schema(hidden = true) String accountIdentifier;
   @Schema(description = PROJECT_PARAM_MESSAGE) @NotNull String projectIdentifier;
-  @Schema(description = ORG_PARAM_MESSAGE) @NotNull String organizationIdentifier;
+  @Schema(description = ORG_PARAM_MESSAGE) @NotNull String orgIdentifier;
   @Schema(
       description =
           "Specifies Connectivity Mode for Git Sync. If True, executes through Delegate, else executes through Platform. The default value is True")
