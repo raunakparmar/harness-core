@@ -40,9 +40,12 @@ import io.harness.ng.core.events.TokenUpdateEvent;
 import io.harness.ng.core.mapper.TagMapper;
 import io.harness.ng.core.mapper.TokenDTOMapper;
 import io.harness.ng.core.user.UserInfo;
+import io.harness.ng.core.user.remote.dto.UserMetadataDTO;
 import io.harness.ng.core.user.service.NgUserService;
+import io.harness.ng.serviceaccounts.service.api.ServiceAccountService;
 import io.harness.outbox.api.OutboxService;
 import io.harness.repositories.ng.core.spring.TokenRepository;
+import io.harness.serviceaccount.ServiceAccountDTO;
 import io.harness.utils.PageUtils;
 
 import com.google.common.base.Preconditions;
@@ -71,6 +74,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class TokenServiceImpl implements TokenService {
   @Inject private TokenRepository tokenRepository;
   @Inject private ApiKeyService apiKeyService;
+  @Inject private ServiceAccountService serviceAccountService;
   @Inject private OutboxService outboxService;
   @Inject private AccountOrgProjectValidator accountOrgProjectValidator;
   @Inject @Named(OUTBOX_TRANSACTION_TEMPLATE) private TransactionTemplate transactionTemplate;
@@ -187,7 +191,15 @@ public class TokenServiceImpl implements TokenService {
           return tokenDTO;
         }
       } else {
-        return tokenDTO;
+        ServiceAccountDTO serviceAccountDTO =
+            serviceAccountService.getServiceAccountDTO(tokenDTO.getAccountIdentifier(), tokenDTO.getOrgIdentifier(),
+                tokenDTO.getProjectIdentifier(), tokenDTO.getParentIdentifier());
+        Optional<UserMetadataDTO> optionalUserInfo = ngUserService.getUserByEmail(serviceAccountDTO.getEmail(), true);
+        if (optionalUserInfo.isPresent()) {
+          tokenDTO.setEmail(serviceAccountDTO.getEmail());
+          tokenDTO.setUsername(serviceAccountDTO.getName());
+          return tokenDTO;
+        }
       }
     }
     return null;
