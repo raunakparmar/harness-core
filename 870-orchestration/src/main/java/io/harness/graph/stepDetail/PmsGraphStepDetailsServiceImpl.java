@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -34,6 +35,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 @OwnedBy(HarnessTeam.PIPELINE)
 @Singleton
+@Slf4j
 public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsService {
   @Inject NodeExecutionsInfoRepository nodeExecutionsInfoRepository;
   @Inject @Getter private final Subject<StepDetailsUpdateObserver> stepDetailsUpdateObserverSubject = new Subject<>();
@@ -67,7 +69,12 @@ public class PmsGraphStepDetailsServiceImpl implements PmsGraphStepDetailsServic
   public PmsStepParameters getStepInputs(String planExecutionId, String nodeExecutionId) {
     Optional<NodeExecutionsInfo> nodeExecutionsInfo =
         nodeExecutionsInfoRepository.findByNodeExecutionId(nodeExecutionId);
-    return nodeExecutionsInfo.get().getResolvedInputs();
+    if (nodeExecutionsInfo.isPresent()) {
+      return nodeExecutionsInfo.get().getResolvedInputs();
+    } else {
+      log.warn("Could not find nodeExecutionsInfo with the given nodeExecutionId: " + nodeExecutionId);
+      return new PmsStepParameters(new HashMap<>());
+    }
   }
 
   @Override
