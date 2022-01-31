@@ -11,7 +11,7 @@ import static io.harness.connector.accesscontrol.ConnectorsAccessControlPermissi
 import static io.harness.rule.OwnerRule.NISHANT;
 import static io.harness.secrets.SecretPermissions.SECRET_EDIT_PERMISSION;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;

@@ -90,6 +90,13 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
   ConnectorDTO connectorDTO;
   SecretDTOV2 secretDTOV2;
   SecretResponseWrapper secretResponseWrapper;
+  final String GET_USER_PRINCIPAL_OR_THROW = "getUserPrincipalOrThrow";
+  final String CAN_UPDATE_GLOBAL_KMS = "canUpdateGlobalKms";
+  final String GET_GLOBAL_KMS_CONNECTOR = "getGlobalKmsConnector";
+  final String CHECK_FOR_HARNESS_SUPPORT_USER = "checkForHarnessSupportUser";
+  final String CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH = "checkForHarnessSupportUser";
+  final String CHECK_CONNECTOR_HAS_ONLY_ACCOUNT_SCOPE_INFO = "checkForHarnessSupportUser";
+  final String CHECK_GLOBAL_KMS_SECRET_EXISTS = "checkForHarnessSupportUser";
 
   @Before
   public void setup() {
@@ -132,7 +139,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
   @Category(UnitTests.class)
   public void testUpdateGlobalKms() throws Exception {
     when(globalKmsService.getGlobalKmsConnector()).thenReturn(Optional.of(globalKmsConnector));
-    PowerMockito.doReturn(userPrincipal).when(globalKmsService, "getUserPrincipalOrThrow");
+    PowerMockito.doReturn(userPrincipal).when(globalKmsService, GET_USER_PRINCIPAL_OR_THROW);
     when(ngConnectorManagerClientService.isHarnessSupportUser(userId)).thenReturn(true);
     when(ngSecretService.get(GLOBAL_ACCOUNT_ID, secretDTOV2.getProjectIdentifier(), secretDTOV2.getOrgIdentifier(),
              secretDTOV2.getIdentifier()))
@@ -142,7 +149,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
         .thenReturn(SecretResponseWrapper.builder().build());
     when(connectorService.update(connectorDTO, GLOBAL_ACCOUNT_ID)).thenReturn(ConnectorResponseDTO.builder().build());
     ConnectorSecretResponseDTO response = globalKmsService.updateGlobalKms(connectorDTO, secretDTOV2);
-    verifyPrivate(globalKmsService, times(1)).invoke("canUpdateGlobalKms", connectorDTO, secretDTOV2);
+    verifyPrivate(globalKmsService, times(1)).invoke(CAN_UPDATE_GLOBAL_KMS, connectorDTO, secretDTOV2);
     verify(ngSecretService, times(1))
         .update(GLOBAL_ACCOUNT_ID, secretDTOV2.getOrgIdentifier(), secretDTOV2.getProjectIdentifier(),
             secretDTOV2.getIdentifier(), secretDTOV2);
@@ -176,29 +183,30 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
   @Owner(developers = NISHANT)
   @Category(UnitTests.class)
   public void testUpdateGlobalKms_connector_not_present() throws Exception {
-    PowerMockito.doNothing().when(globalKmsService, "canUpdateGlobalKms", connectorDTO, secretDTOV2);
-    PowerMockito.doReturn(Optional.ofNullable(null)).when(globalKmsService, "getGlobalKmsConnector");
+    PowerMockito.doNothing().when(globalKmsService, CAN_UPDATE_GLOBAL_KMS, connectorDTO, secretDTOV2);
+    PowerMockito.doReturn(Optional.ofNullable(null)).when(globalKmsService, GET_GLOBAL_KMS_CONNECTOR);
     exceptionRule.expect(NotFoundException.class);
     exceptionRule.expectMessage(String.format("Global connector of type %s not found", ConnectorType.GCP_KMS));
     globalKmsService.updateGlobalKms(connectorDTO, secretDTOV2);
-    verifyPrivate(globalKmsService, times(1)).invoke("getGlobalKmsConnector");
+    verifyPrivate(globalKmsService, times(1)).invoke(GET_GLOBAL_KMS_CONNECTOR);
   }
 
   @Test
   @Owner(developers = NISHANT)
   @Category(UnitTests.class)
   public void testCanUpdateGlobalKms() throws Exception {
-    PowerMockito.doReturn(userPrincipal).when(globalKmsService, "getUserPrincipalOrThrow");
-    PowerMockito.doNothing().when(globalKmsService, "checkForHarnessSupportUser", userPrincipal.getName());
-    PowerMockito.doNothing().when(globalKmsService, "checkConnectorTypeAndCredentialsMatch", connectorDTO, secretDTOV2);
-    PowerMockito.doNothing().when(globalKmsService, "checkConnectorHasOnlyAccountScopeInfo", connectorDTO);
-    PowerMockito.doNothing().when(globalKmsService, "checkGlobalKmsSecretExists", secretDTOV2);
-    Whitebox.invokeMethod(globalKmsService, "canUpdateGlobalKms", connectorDTO, secretDTOV2);
-    verifyPrivate(globalKmsService, times(1)).invoke("checkForHarnessSupportUser", userPrincipal.getName());
+    PowerMockito.doReturn(userPrincipal).when(globalKmsService, GET_USER_PRINCIPAL_OR_THROW);
+    PowerMockito.doNothing().when(globalKmsService, CHECK_FOR_HARNESS_SUPPORT_USER, userPrincipal.getName());
+    PowerMockito.doNothing().when(
+        globalKmsService, CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH, connectorDTO, secretDTOV2);
+    PowerMockito.doNothing().when(globalKmsService, CHECK_CONNECTOR_HAS_ONLY_ACCOUNT_SCOPE_INFO, connectorDTO);
+    PowerMockito.doNothing().when(globalKmsService, CHECK_GLOBAL_KMS_SECRET_EXISTS, secretDTOV2);
+    Whitebox.invokeMethod(globalKmsService, CAN_UPDATE_GLOBAL_KMS, connectorDTO, secretDTOV2);
+    verifyPrivate(globalKmsService, times(1)).invoke(CHECK_FOR_HARNESS_SUPPORT_USER, userPrincipal.getName());
     verifyPrivate(globalKmsService, times(1))
-        .invoke("checkConnectorTypeAndCredentialsMatch", connectorDTO, secretDTOV2);
-    verifyPrivate(globalKmsService, times(1)).invoke("checkConnectorHasOnlyAccountScopeInfo", connectorDTO);
-    verifyPrivate(globalKmsService, times(1)).invoke("checkGlobalKmsSecretExists", secretDTOV2);
+        .invoke(CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH, connectorDTO, secretDTOV2);
+    verifyPrivate(globalKmsService, times(1)).invoke(CHECK_CONNECTOR_HAS_ONLY_ACCOUNT_SCOPE_INFO, connectorDTO);
+    verifyPrivate(globalKmsService, times(1)).invoke(CHECK_GLOBAL_KMS_SECRET_EXISTS, secretDTOV2);
   }
 
   @Test
@@ -210,7 +218,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     globalContext.upsertGlobalContextRecord(PrincipalContextData.builder().principal(userPrincipal).build());
     PowerMockito.mockStatic(GlobalContextManager.class);
     when(GlobalContextManager.obtainGlobalContext()).thenReturn(globalContext);
-    Object userPrincipalResponse = Whitebox.invokeMethod(globalKmsService, "getUserPrincipalOrThrow");
+    Object userPrincipalResponse = Whitebox.invokeMethod(globalKmsService, GET_USER_PRINCIPAL_OR_THROW);
     PowerMockito.verifyStatic(GlobalContextManager.class, times(1));
     assertNotNull(userPrincipalResponse);
     assertThat(userPrincipalResponse).isInstanceOf(UserPrincipal.class);
@@ -225,7 +233,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     when(GlobalContextManager.obtainGlobalContext()).thenReturn(null);
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Not authorized to update in current context");
-    Whitebox.invokeMethod(globalKmsService, "getUserPrincipalOrThrow");
+    Whitebox.invokeMethod(globalKmsService, GET_USER_PRINCIPAL_OR_THROW);
     PowerMockito.verifyStatic(GlobalContextManager.class, times(1));
   }
 
@@ -241,7 +249,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     when(GlobalContextManager.obtainGlobalContext()).thenReturn(globalContext);
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Not authorized to update in current context");
-    Whitebox.invokeMethod(globalKmsService, "getUserPrincipalOrThrow");
+    Whitebox.invokeMethod(globalKmsService, GET_USER_PRINCIPAL_OR_THROW);
     PowerMockito.verifyStatic(GlobalContextManager.class, times(1));
   }
 
@@ -256,7 +264,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     when(GlobalContextManager.obtainGlobalContext()).thenReturn(globalContext);
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Not authorized to update in current context");
-    Whitebox.invokeMethod(globalKmsService, "getUserPrincipalOrThrow");
+    Whitebox.invokeMethod(globalKmsService, GET_USER_PRINCIPAL_OR_THROW);
     PowerMockito.verifyStatic(GlobalContextManager.class, times(1));
   }
 
@@ -267,7 +275,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     when(ngConnectorManagerClientService.isHarnessSupportUser(any())).thenReturn(false);
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("User is not authorized");
-    Whitebox.invokeMethod(globalKmsService, "checkForHarnessSupportUser", UUIDGenerator.generateUuid());
+    Whitebox.invokeMethod(globalKmsService, CHECK_FOR_HARNESS_SUPPORT_USER, UUIDGenerator.generateUuid());
     verify(ngConnectorManagerClientService, times(1)).isHarnessSupportUser(any());
   }
 
@@ -281,7 +289,8 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
             .build();
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Update operation not supported");
-    Whitebox.invokeMethod(globalKmsService, "checkConnectorTypeAndCredentialsMatch", nonHarnessConnector, secretDTOV2);
+    Whitebox.invokeMethod(
+        globalKmsService, CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH, nonHarnessConnector, secretDTOV2);
   }
 
   @Test
@@ -296,7 +305,8 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
                                            .build();
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Update operation not supported");
-    Whitebox.invokeMethod(globalKmsService, "checkConnectorTypeAndCredentialsMatch", nonHarnessConnector, secretDTOV2);
+    Whitebox.invokeMethod(
+        globalKmsService, CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH, nonHarnessConnector, secretDTOV2);
   }
 
   @Test
@@ -307,7 +317,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Secret credential reference cannot be changed");
     SecretDTOV2 secretDTO = SecretDTOV2.builder().identifier(UUIDGenerator.generateUuid()).build();
-    Whitebox.invokeMethod(globalKmsService, "checkConnectorTypeAndCredentialsMatch", connectorDTO, secretDTO);
+    Whitebox.invokeMethod(globalKmsService, CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH, connectorDTO, secretDTO);
   }
 
   @Test
@@ -328,7 +338,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
             .build();
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Invalid credential scope");
-    Whitebox.invokeMethod(globalKmsService, "checkConnectorTypeAndCredentialsMatch", connectorDTO, secretDTOV2);
+    Whitebox.invokeMethod(globalKmsService, CHECK_CONNECTOR_TYPE_AND_CREDENTIALS_MATCH, connectorDTO, secretDTOV2);
   }
 
   @Test
@@ -341,7 +351,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
             .build();
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage("Global connector cannot have org/project identifier");
-    Whitebox.invokeMethod(globalKmsService, "checkConnectorHasOnlyAccountScopeInfo", connectorDTO);
+    Whitebox.invokeMethod(globalKmsService, CHECK_CONNECTOR_HAS_ONLY_ACCOUNT_SCOPE_INFO, connectorDTO);
   }
 
   @Test
@@ -351,7 +361,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     when(ngSecretService.get(GLOBAL_ACCOUNT_ID, secretDTOV2.getOrgIdentifier(), secretDTOV2.getProjectIdentifier(),
              secretDTOV2.getIdentifier()))
         .thenReturn(Optional.of(secretResponseWrapper));
-    Whitebox.invokeMethod(globalKmsService, "checkGlobalKmsSecretExists", secretDTOV2);
+    Whitebox.invokeMethod(globalKmsService, CHECK_GLOBAL_KMS_SECRET_EXISTS, secretDTOV2);
     verify(ngSecretService, times(1))
         .get(GLOBAL_ACCOUNT_ID, secretDTOV2.getOrgIdentifier(), secretDTOV2.getProjectIdentifier(),
             secretDTOV2.getIdentifier());
@@ -367,7 +377,7 @@ public class GlobalKmsServiceImplTest extends CategoryTest {
     exceptionRule.expect(InvalidRequestException.class);
     exceptionRule.expectMessage(
         String.format("Secret with identifier %s does not exist in global scope", secretDTOV2.getIdentifier()));
-    Whitebox.invokeMethod(globalKmsService, "checkGlobalKmsSecretExists", secretDTOV2);
+    Whitebox.invokeMethod(globalKmsService, CHECK_GLOBAL_KMS_SECRET_EXISTS, secretDTOV2);
     verify(ngSecretService, times(1))
         .get(GLOBAL_ACCOUNT_ID, secretDTOV2.getOrgIdentifier(), secretDTOV2.getProjectIdentifier(),
             secretDTOV2.getIdentifier());
