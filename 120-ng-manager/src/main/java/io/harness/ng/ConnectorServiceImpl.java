@@ -134,6 +134,11 @@ public class ConnectorServiceImpl implements ConnectorService {
   }
 
   @Override
+  public Optional<ConnectorResponseDTO> getGlobalKmsConnector() {
+    return defaultConnectorService.getGlobalKmsConnector();
+  }
+
+  @Override
   public ConnectorResponseDTO create(@NotNull ConnectorDTO connector, String accountIdentifier) {
     return createInternal(connector, accountIdentifier, ChangeType.ADD);
   }

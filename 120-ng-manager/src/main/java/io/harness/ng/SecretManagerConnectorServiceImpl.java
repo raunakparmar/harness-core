@@ -85,6 +85,11 @@ public class SecretManagerConnectorServiceImpl implements ConnectorService {
   }
 
   @Override
+  public Optional<ConnectorResponseDTO> getGlobalKmsConnector() {
+    return defaultConnectorService.getGlobalKmsConnector();
+  }
+
+  @Override
   public Optional<ConnectorResponseDTO> getByName(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String name, boolean isDeletedAllowed) {
     return defaultConnectorService.getByName(

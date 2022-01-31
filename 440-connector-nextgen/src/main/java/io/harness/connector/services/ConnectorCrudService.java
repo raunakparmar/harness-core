@@ -37,6 +37,8 @@ public interface ConnectorCrudService {
   Optional<ConnectorResponseDTO> get(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String connectorIdentifier);
 
+  Optional<ConnectorResponseDTO> getGlobalKmsConnector();
+
   Optional<ConnectorResponseDTO> getByName(
       String accountIdentifier, String orgIdentifier, String projectIdentifier, String name, boolean isDeletedAllowed);
 

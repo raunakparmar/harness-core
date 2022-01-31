@@ -17,6 +17,7 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import static io.harness.errorhandling.NGErrorHelper.DEFAULT_ERROR_SUMMARY;
 import static io.harness.exception.WingsException.USER;
 import static io.harness.git.model.ChangeType.ADD;
+import static io.harness.helpers.GlobalSecretManagerUtils.GLOBAL_ACCOUNT_ID;
 import static io.harness.utils.RestCallToNGManagerClientUtils.execute;
 
 import static java.lang.String.format;
@@ -160,6 +161,15 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
     Optional<Connector> connector =
         getInternal(accountIdentifier, orgIdentifier, projectIdentifier, connectorIdentifier);
     return connector.map(x -> getResponse(accountIdentifier, orgIdentifier, projectIdentifier, x));
+  }
+
+  @Override
+  public Optional<ConnectorResponseDTO> getGlobalKmsConnector() {
+    Optional<Connector> connector = connectorRepository.findOne(Criteria.where(ConnectorKeys.accountIdentifier)
+                                                                    .is(GLOBAL_ACCOUNT_ID)
+                                                                    .and(ConnectorKeys.type)
+                                                                    .is(ConnectorType.GCP_KMS));
+    return connector.map(x -> getResponse(GLOBAL_ACCOUNT_ID, x.getOrgIdentifier(), x.getProjectIdentifier(), x));
   }
 
   @Override

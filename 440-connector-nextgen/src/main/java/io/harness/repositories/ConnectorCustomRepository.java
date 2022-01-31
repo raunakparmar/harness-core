@@ -57,6 +57,8 @@ public interface ConnectorCustomRepository {
 
   Optional<Connector> findOne(Criteria criteria, String repo, String branch);
 
+  Optional<Connector> findOne(Criteria criteria);
+
   long count(Criteria criteria);
 
   Connector update(

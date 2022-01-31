@@ -143,6 +143,11 @@ public class ConnectorCustomRepositoryImpl implements ConnectorCustomRepository 
   }
 
   @Override
+  public Optional<Connector> findOne(Criteria criteria) {
+    return Optional.ofNullable(mongoTemplate.findOne(query(criteria), Connector.class));
+  }
+
+  @Override
   public long count(Criteria criteria) {
     return mongoTemplate.count(new Query(criteria), Connector.class);
   }
